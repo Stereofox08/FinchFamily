@@ -771,9 +771,44 @@
         display: none;
         border-top: 1px dashed var(--line);
         padding-top: 12px;
+        margin-top: 8px;
       }
 
       .edit-panel.open { display: grid; gap: 10px; animation: rise 0.2s ease; }
+
+      .edit-panel .wide {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .edit-panel .wide button {
+        flex: 1;
+        min-width: 120px;
+        min-height: 48px;
+        padding: 12px 20px;
+        font-size: 15px;
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.12s ease;
+      }
+
+      .edit-panel .wide button:active {
+        transform: scale(0.97);
+      }
+
+      .edit-panel .wide .primary {
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        color: #fff;
+        box-shadow: 0 8px 16px -8px var(--accent-b);
+      }
+
+      .edit-panel .wide .secondary {
+        background: var(--surface-soft);
+        border: 1.5px solid var(--line);
+        color: var(--ink);
+      }
 
       .history-actions { display: flex; gap: 6px; margin-left: auto; }
       .icon-action.edit { background: var(--surface-soft); color: var(--ink-soft); }
@@ -1142,17 +1177,12 @@
       function initAddToHomeScreen() {
         const btn = document.getElementById('addHomeBtn');
 
-        // Method only exists on recent Telegram clients (Bot API 8.0+).
-        // Older clients (e.g. 6.0) don't just skip unknown methods here —
-        // they throw synchronously, so this whole thing must be wrapped
-        // in try/catch or it can abort the rest of the script.
         try {
           if (!tg || typeof tg.checkHomeScreenStatus !== 'function' || typeof tg.addToHomeScreen !== 'function') {
             return;
           }
 
           tg.checkHomeScreenStatus((status) => {
-            // status: 'unsupported' | 'unknown' | 'added' | 'missed'
             if (status === 'missed' || status === 'unknown') {
               btn.style.display = 'flex';
             }
@@ -1171,7 +1201,6 @@
             setStatus('Ярлык добавлен на главный экран.');
           });
         } catch (error) {
-          // Unsupported on this client version — just hide the button and move on.
           console.warn('Home screen shortcut unsupported on this client:', error);
         }
       }
@@ -1422,10 +1451,6 @@
           .catch((error) => { if (!options.silent) { showError(error); } });
       }
 
-      // Apps Script has no push channel to the browser, so "live" updates
-      // (e.g. someone editing the spreadsheet directly, or deleting rows)
-      // are approximated by polling quietly in the background, plus an
-      // immediate refresh whenever the app regains focus/visibility.
       const LIVE_REFRESH_INTERVAL_MS = 15000;
 
       function silentRefreshAll() {
@@ -1511,7 +1536,7 @@
                 <div class="meta"></div>
               </div>
               <div class="task-row-actions">
-                <button class="icon-action edit" type="button" data-action="toggle-edit" aria-label="\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c">${EDIT_ICON}</button>
+                <button class="icon-action edit" type="button" data-action="toggle-edit" aria-label="Редактировать">${EDIT_ICON}</button>
                 <button class="icon-action done" type="button" data-action="complete" aria-label="Выполнено">${CHECK_ICON}</button>
                 <button class="icon-action postpone-btn" type="button" data-action="toggle-postpone" aria-label="Перенести">${REDO_ICON}</button>
               </div>
@@ -1528,13 +1553,13 @@
               </div>
             </div>
             <div class="edit-panel">
-              <label class="wide">\u0414\u0435\u043b\u043e<input name="task" value=""></label>
-              <label class="wide">\u041e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0439<input name="responsible" value=""></label>
-              <label>\u0421\u0440\u043e\u043a<input name="deadline" type="date"></label>
-              <label class="wide">\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439<textarea name="comment"></textarea></label>
+              <label class="wide">Дело<input name="task" value=""></label>
+              <label class="wide">Ответственный<input name="responsible" value=""></label>
+              <label>Срок<input name="deadline" type="date"></label>
+              <label class="wide">Комментарий<textarea name="comment"></textarea></label>
               <div class="wide">
-                <button class="primary" type="button" data-action="save-edit">\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c</button>
-                <button class="secondary" type="button" data-action="cancel-edit">\u041e\u0442\u043c\u0435\u043d\u0430</button>
+                <button class="primary" type="button" data-action="save-edit">Сохранить</button>
+                <button class="secondary" type="button" data-action="cancel-edit">Отмена</button>
               </div>
             </div>
           `;
@@ -1716,21 +1741,30 @@
           editPanel.querySelector('[name="comment"]').value = entry.comment || '';
           body.appendChild(editPanel);
 
-          editBtn.addEventListener('click', () => editPanel.classList.toggle('open'));
+          editBtn.addEventListener('click', () => {
+            document.querySelectorAll('.edit-panel.open').forEach((panel) => {
+              if (panel !== editPanel) panel.classList.remove('open');
+            });
+            editPanel.classList.toggle('open');
+          });
+
           editPanel.querySelector('[data-action="cancel-transaction"]').addEventListener('click', () => {
             editPanel.classList.remove('open');
           });
+
           editPanel.querySelector('[data-action="save-transaction"]').addEventListener('click', () => {
-            updateTransaction(entry.id, {
+            const updatedData = {
               date: editPanel.querySelector('[name="date"]').value,
               amount: editPanel.querySelector('[name="amount"]').value,
               who: editPanel.querySelector('[name="who"]').value,
               category: editPanel.querySelector('[name="category"]').value,
               method: editPanel.querySelector('[name="method"]').value,
               comment: editPanel.querySelector('[name="comment"]').value,
-            });
+            };
+            updateTransaction(entry.id, updatedData);
             editPanel.classList.remove('open');
           });
+
           deleteBtn.addEventListener('click', () => deleteTransaction(entry.id));
 
           item.appendChild(body);
@@ -1942,35 +1976,32 @@
         document.getElementById('dateLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
       }
 
-function callServer(name, data) {
-  const telegramInitData = window.Telegram?.WebApp?.initData || "";
-  const url = `${APPS_SCRIPT_URL}?action=${name}`;
-  return fetch(url, {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'x-telegram-init-data': telegramInitData
-    },
-    body: JSON.stringify(data) 
-  })
-    .then((response) => {
-      // Always try to read the JSON body first, even on non-2xx responses —
-      // the backend puts the real failure reason in `error`/`message` there.
-      // Falling back to a bare status code (as before) hides the actual cause.
-      return response.json()
-        .catch(() => ({}))
-        .then((result) => ({ ok: response.ok, status: response.status, result }));
-    })
-    .then(({ ok, status, result }) => {
-      if (!ok || result.success === false) {
-        throw new Error(result.error || `Ошибка сервера: ${status}`);
+      function callServer(name, data) {
+        const telegramInitData = window.Telegram?.WebApp?.initData || "";
+        const url = `${APPS_SCRIPT_URL}?action=${name}`;
+        return fetch(url, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-telegram-init-data': telegramInitData
+          },
+          body: JSON.stringify(data) 
+        })
+          .then((response) => {
+            return response.json()
+              .catch(() => ({}))
+              .then((result) => ({ ok: response.ok, status: response.status, result }));
+          })
+          .then(({ ok, status, result }) => {
+            if (!ok || result.success === false) {
+              throw new Error(result.error || `Ошибка сервера: ${status}`);
+            }
+            if (!result.data) {
+              throw new Error('Не удалось выполнить запрос.');
+            }
+            return result.data;
+          });
       }
-      if (!result.data) {
-        throw new Error('Не удалось выполнить запрос.');
-      }
-      return result.data;
-    });
-}
 
       function setStatus(message) {
         const status = document.getElementById('status');
