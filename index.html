@@ -976,6 +976,12 @@
     </nav>
 
     <script>
+      // URL of the Apps Script Web App deployment (.../exec). Declared here,
+      // at the very top, because callServer() (which uses it) is invoked
+      // by top-level code further down — and `const` is not hoisted the
+      // way function declarations are, so it must exist before that point.
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_g0hiT2e-F5NhdBFcG9pgp4CFjKyPrjT-axA3NWwjAmbU6gD_4mOqzUZv1QZ5anyyeA/exec';
+
       const tg = window.Telegram && window.Telegram.WebApp;
       const initData = tg ? tg.initData : '';
       const state = { today: '', tasks: [], options: {}, finance: {} };
@@ -1533,12 +1539,6 @@
         const label = WEEKDAYS_RU[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS_RU[d.getMonth()];
         document.getElementById('dateLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
       }
-
-      // URL of the Apps Script Web App deployment (.../exec). The frontend
-      // now lives on GitHub Pages, so it can no longer use google.script.run
-      // (that only works for pages served by script.google.com itself) —
-      // instead we call the deployment's JSON API over plain fetch().
-      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_g0hiT2e-F5NhdBFcG9pgp4CFjKyPrjT-axA3NWwjAmbU6gD_4mOqzUZv1QZ5anyyeA/exec';
 
       function callServer(name, data) {
         // Content-Type is deliberately text/plain: sending application/json
