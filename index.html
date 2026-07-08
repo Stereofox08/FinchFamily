@@ -1549,23 +1549,30 @@
         document.getElementById('dateLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
       }
 
-      function callServer(name, data) {
-        // Content-Type is deliberately text/plain: sending application/json
-        // would trigger a CORS preflight (OPTIONS) request, which Apps
-        // Script web apps don't handle, and the call would fail silently.
-        return fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: name, initData, data }),
-        })
-          .then((response) => response.json())
-          .then((result) => {
-            if (result.ok === false) {
-              throw new Error(result.error || 'Не удалось выполнить запрос.');
-            }
-            return result;
-          });
+function callServer(name, data) {
+  const telegramInitData = window.Telegram?.WebApp?.initData || "";
+  const url = `${APPS_SCRIPT_URL}?action=${name}`;
+  return fetch(url, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'x-telegram-init-data': telegramInitData
+    },
+    body: JSON.stringify(data) 
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
       }
+      return response.json();
+    })
+    .then((result) => {
+      if (result.success === false || !result.data) {
+        throw new Error(result.error || 'Не удалось выполнить запрос.');
+      }
+      return result.data;
+    });
+}
 
       function setStatus(message) {
         const status = document.getElementById('status');
