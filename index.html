@@ -18,867 +18,1566 @@
         --line: rgba(36, 31, 61, 0.08);
         --shadow: 0 14px 30px -16px rgba(60, 40, 100, 0.28);
         --shadow-lg: 0 20px 40px -18px rgba(60, 40, 100, 0.32);
-        --primary: #7c4dff;
-        --primary-light: #f0eaff;
-        --primary-ink: #5216ff;
-        --expense: #ff4a74;
-        --expense-light: #fff0f3;
-        --income: #00cc99;
-        --income-light: #e6fbf5;
-        --saving: #ffaa00;
-        --saving-light: #fff7e6;
-        --avatar-size: 26px;
-        --radius-sm: 10px;
-        --radius-md: 16px;
-        --radius-lg: 24px;
-        --font-sora: 'Sora', sans-serif;
-        --font-inter: 'Inter', sans-serif;
-        --inset-top: 0px;
-        --inset-bottom: 0px;
+
+        /* section accent, overridden per data-context */
+        --accent-a: #ff9a76;
+        --accent-b: #ff6f91;
+        --accent-tint: rgba(255, 111, 145, 0.13);
+
+        /* height reserved for Telegram's native WebApp chrome (close button,
+           the "more"/settings button, drag handle) so our own header never
+           sits underneath it. Telegram doesn't expose this as a CSS var, so
+           we approximate with a fixed value plus the real safe-area inset. */
+        --tg-header-height: 65px;
       }
-      @supports (padding-top: env(safe-area-inset-top)) {
-        :root {
-          --inset-top: env(safe-area-inset-top);
-          --inset-bottom: env(safe-area-inset-bottom);
-        }
-      }
-      * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+      body[data-context="tasks"]   { --accent-a: #ff9a76; --accent-b: #ff6f91; --accent-tint: rgba(255, 111, 145, 0.13); }
+      body[data-context="expense"] { --accent-a: #f78fb3; --accent-b: #a78bfa; --accent-tint: rgba(167, 139, 250, 0.15); }
+      body[data-context="income"]  { --accent-a: #5eead4; --accent-b: #10b981; --accent-tint: rgba(16, 185, 129, 0.13); }
+      body[data-context="saving"]  { --accent-a: #ffd67e; --accent-b: #f6a94a; --accent-tint: rgba(246, 169, 74, 0.15); }
+
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
       body {
-        font-family: var(--font-inter);
-        background-color: var(--bg-base);
-        color: var(--ink);
-        padding-top: var(--inset-top);
-        padding-bottom: calc(76px + var(--inset-bottom));
+        margin: 0;
         min-height: 100vh;
-        overflow-x: hidden;
-        -webkit-user-select: none;
-        user-select: none;
+        color: var(--ink);
+        font: 15px/1.45 "Inter", system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-base);
+        background-image:
+          radial-gradient(480px 380px at 8% -6%, #ffe0ec 0%, rgba(255, 224, 236, 0) 62%),
+          radial-gradient(520px 420px at 104% 4%, #e6defc 0%, rgba(230, 222, 252, 0) 60%),
+          radial-gradient(560px 440px at 50% 108%, #dbeafe 0%, rgba(219, 234, 254, 0) 58%);
+        background-repeat: no-repeat;
+        transition: background 0.3s ease;
       }
-      .safe-top { height: var(--inset-top); background: transparent; width: 100%; }
-      header {
-        background: var(--surface);
-        padding: 16px 20px 14px;
-        border-bottom: 1px solid var(--line);
+
+      button, input, select, textarea { font: inherit; color: inherit; }
+      h1, h2, h3 { margin: 0; font-family: "Sora", "Inter", sans-serif; }
+
+      .app {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 20px 16px 8px;
+        /* push all content below Telegram's own header row so it never
+           overlaps with the native close/more buttons at the top */
+        padding-top: calc(var(--tg-header-height) + env(safe-area-inset-top, 0px) + 14px);
+        padding-bottom: calc(110px + env(safe-area-inset-bottom));
+      }
+
+      /* ---------- Header ---------- */
+
+      .header-row {
         display: flex;
-        flex-direction: column;
-        gap: 2px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
       }
-      header h1 { font-family: var(--font-sora); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-      header p { font-size: 13px; color: var(--ink-soft); font-weight: 500; }
-      .view { display: none; padding: 20px 16px; animation: fadeIn 0.25s ease-out forwards; }
-      .view.active { display: block; }
-      @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-      .card {
-        background: var(--surface);
-        border-radius: var(--radius-md);
-        padding: 18px;
-        margin-bottom: 16px;
-        box-shadow: var(--shadow);
-        border: 1px solid rgba(36, 31, 61, 0.03);
-      }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-      .wide { grid-column: span 2; }
-      label {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+
+      .greeting-eyebrow {
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--ink-soft);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        margin: 0 0 3px;
       }
-      input, select, textarea {
-        background: var(--surface-soft);
-        border: 1px solid transparent;
-        border-radius: var(--radius-sm);
-        padding: 12px 14px;
-        font-size: 15px;
-        font-family: var(--font-inter);
-        color: var(--ink);
-        font-weight: 500;
-        width: 100%;
-        outline: none;
-        transition: all 0.2s;
-        -webkit-appearance: none;
+
+      h1.title {
+        font-size: 23px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        line-height: 1.1;
       }
-      input:focus, select:focus, textarea:focus { border-color: var(--primary); background: var(--surface); }
-      textarea { resize: none; height: 70px; }
-      .btn {
-        background: var(--primary);
-        color: #fff;
+
+      .icon-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
         border: none;
-        border-radius: var(--radius-sm);
-        padding: 14px;
-        font-size: 15px;
-        font-weight: 700;
-        font-family: var(--font-sora);
-        width: 100%;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        box-shadow: 0 4px 12px rgba(124, 77, 255, 0.25);
-        transition: transform 0.1s;
-      }
-      .btn:active { transform: scale(0.98); }
-      .btn-text {
-        background: none;
-        box-shadow: none;
-        color: var(--primary);
-        font-weight: 600;
-        font-size: 14px;
-        padding: 6px 0;
-        width: auto;
-      }
-      .btn-text:active { transform: none; opacity: 0.7; }
-      .chip-native { display: none !important; }
-      .chip-track { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
-      .chip {
-        background: var(--surface-soft);
-        color: var(--ink);
-        padding: 8px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s;
-        border: 1px solid transparent;
-      }
-      .chip.selected { background: var(--primary-light); color: var(--primary-ink); border-color: rgba(124, 77, 255, 0.2); }
-      .chip-avatar {
-        width: var(--avatar-size);
-        height: var(--avatar-size);
-        border-radius: 50%;
-        background: var(--ink-faint);
-        color: var(--ink);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        font-weight: 700;
-        font-family: var(--font-sora);
-        text-transform: uppercase;
-      }
-      .chip.selected .chip-avatar { background: var(--primary); color: #fff; }
-      .widget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-      .widget {
         background: var(--surface);
-        border-radius: var(--radius-md);
-        padding: 16px;
-        box-shadow: var(--shadow);
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        border: 1px solid rgba(36, 31, 61, 0.02);
-      }
-      .widget-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; }
-      .widget-val { font-family: var(--font-sora); font-size: 18px; font-weight: 800; }
-      .widget.expense .widget-val { color: var(--expense); }
-      .widget.income .widget-val { color: var(--income); }
-      .widget.saving .widget-val { color: var(--saving); }
-      .widget.total { grid-column: span 2; flex-direction: row; justify-content: space-between; align-items: center; padding: 14px 18px; }
-      .widget.total .widget-val { font-size: 20px; }
-      .task-item {
-        background: var(--surface);
-        border-radius: var(--radius-sm);
-        padding: 14px 16px;
-        margin-bottom: 10px;
         box-shadow: var(--shadow);
         display: flex;
         align-items: center;
-        gap: 14px;
-        border: 1px solid rgba(36, 31, 61, 0.02);
-        position: relative;
-      }
-      .task-check {
-        width: 22px;
-        height: 22px;
-        border-radius: 6px;
-        border: 2px solid var(--ink-faint);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
         justify-content: center;
-        transition: all 0.15s;
-        flex-shrink: 0;
-      }
-      .task-check::after {
-        content: '';
-        width: 10px;
-        height: 6px;
-        border-left: 2px solid #fff;
-        border-bottom: 2px solid #fff;
-        transform: rotate(-45deg) translate(1px, -1px);
-        opacity: 0;
-        transition: all 0.15s;
-      }
-      .task-item.done .task-check { background: var(--income); border-color: var(--income); }
-      .task-item.done .task-check::after { opacity: 1; }
-      .task-body { flex-grow: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-      .task-title { font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.3; word-break: break-word; }
-      .task-item.done .task-title { text-decoration: line-through; color: var(--ink-soft); }
-      .task-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-      .task-badge {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 10px;
-        background: var(--surface-soft);
         color: var(--ink-soft);
+        flex-shrink: 0;
+        transition: transform 0.12s ease, color 0.12s ease;
       }
-      .task-badge.date-overdue { background: var(--expense-light); color: var(--expense); font-weight: 700; }
-      .task-badge.date-today { background: var(--saving-light); color: var(--saving); font-weight: 700; }
-      .task-item .chip-avatar { width: 20px; height: 20px; font-size: 8px; flex-shrink: 0; }
-      .nav-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.85);
-        -webkit-backdrop-filter: blur(20px);
-        backdrop-filter: blur(20px);
-        border-top: 1px solid var(--line);
-        padding: 8px 12px calc(8px + var(--inset-bottom));
+
+      .icon-btn:active { transform: scale(0.92); }
+      .icon-btn svg { width: 19px; height: 19px; stroke: currentColor; }
+
+      .debug {
+        color: var(--ink-faint);
+        font-size: 10.5px;
+        margin: -12px 0 14px;
+      }
+
+      /* ---------- Balance panel (always visible) ---------- */
+
+      .balance-card {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 6px;
-        z-index: 1000;
+        background: var(--surface);
+        border-radius: 20px;
+        padding: 14px 8px;
+        margin-bottom: 16px;
+        box-shadow: var(--shadow);
       }
-      .nav-item {
+
+      .balance-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        text-align: center;
+        padding: 0 2px;
+      }
+
+      .balance-item + .balance-item { border-left: 1px solid var(--line); }
+
+      .balance-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+
+      .balance-value {
+        font-family: "Sora", sans-serif;
+        font-size: 13.5px;
+        font-weight: 800;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+
+      .balance-item-main .balance-value {
+        font-size: 14.5px;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .balance-item-main.balance-negative .balance-value {
+        background: none;
+        -webkit-text-fill-color: initial;
+        color: #d64550;
+      }
+
+      @media (max-width: 380px) {
+        .balance-card { grid-template-columns: repeat(2, 1fr); row-gap: 12px; }
+        .balance-item:nth-child(3) { border-left: none; }
+      }
+
+      /* ---------- Section headline ---------- */
+
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .section-head h2 {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+
+      /* ---------- Views ---------- */
+
+      .view { display: none; }
+      .view.active { display: block; animation: rise 0.26s ease; }
+
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ---------- Chip filter / selector rows ---------- */
+
+      .chip-track {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 2px 2px 6px;
+        scrollbar-width: none;
+      }
+
+      .chip-track::-webkit-scrollbar { display: none; }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+        border: 1.5px solid var(--line);
+        background: var(--surface);
+        color: var(--ink-soft);
+        font-weight: 700;
+        font-size: 13px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+      }
+
+      .chip.active {
+        color: #fff;
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        box-shadow: 0 8px 16px -8px var(--accent-b);
+      }
+
+      .chip-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 9.5px;
+        font-weight: 800;
+        font-family: "Sora", sans-serif;
+        flex-shrink: 0;
+      }
+
+      .chip-empty {
+        font-size: 12.5px;
+        color: var(--ink-faint);
+        padding: 8px 2px;
+      }
+
+      select.chip-native { display: none; }
+
+      /* ---------- Toggle chip (checkbox styled as pill) ---------- */
+
+      .toggle-chip { position: relative; display: inline-flex; flex-shrink: 0; }
+      .toggle-chip input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+
+      .toggle-face {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1.5px solid var(--line);
+        background: var(--surface);
+        color: var(--ink-soft);
+        font-weight: 700;
+        font-size: 13px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+      }
+
+      .toggle-face svg { width: 14px; height: 14px; stroke: currentColor; }
+
+      .toggle-chip input:checked ~ .toggle-face {
+        color: #fff;
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        box-shadow: 0 8px 16px -8px var(--accent-b);
+      }
+
+      /* ---------- Collapsible "new task" composer ---------- */
+
+      .add-toggle {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        border-radius: 18px;
+        padding: 15px;
+        margin-bottom: 14px;
+        font-weight: 800;
+        font-size: 14.5px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        box-shadow: var(--shadow-lg);
+        transition: transform 0.12s ease;
+      }
+
+      .add-toggle:active { transform: scale(0.98); }
+      .add-toggle svg { width: 18px; height: 18px; stroke: currentColor; transition: transform 0.2s ease; }
+      .add-toggle.open svg { transform: rotate(45deg); }
+
+      .collapsible {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.32s ease;
+      }
+
+      .collapsible.open { max-height: 900px; }
+
+      /* ---------- Cards / panels ---------- */
+
+      .card {
+        background: var(--surface);
+        border-radius: 22px;
+        padding: 18px;
+        margin-bottom: 14px;
+        box-shadow: var(--shadow);
+      }
+
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: var(--ink-soft);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      input, select, textarea {
+        width: 100%;
+        min-height: 46px;
+        border: 1.5px solid var(--line);
+        border-radius: 14px;
+        background: var(--surface-soft);
+        color: var(--ink);
+        padding: 10px 14px;
+        font-size: 14.5px;
+        font-weight: 500;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      input::placeholder, textarea::placeholder { color: var(--ink-faint); font-weight: 400; }
+
+      input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--accent-b);
+        box-shadow: 0 0 0 4px var(--accent-tint);
+      }
+
+      textarea { min-height: 70px; resize: vertical; }
+      .wide { grid-column: 1 / -1; }
+
+      .actions { margin-top: 14px; }
+
+      .primary {
+        width: 100%;
+        min-height: 50px;
+        border: none;
+        border-radius: 16px;
+        font-weight: 800;
+        font-size: 14.5px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        box-shadow: 0 14px 26px -12px var(--accent-b);
+        transition: transform 0.12s ease;
+      }
+
+      .primary:active { transform: scale(0.98); }
+
+      .secondary {
+        min-height: 42px;
+        border: 1.5px solid var(--line);
+        border-radius: 14px;
+        padding: 0 14px;
+        background: var(--surface);
+        color: var(--ink);
+        font-weight: 700;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .secondary:active { transform: scale(0.96); }
+
+      /* ---------- Amount hero card (expense / income / saving) ---------- */
+
+      .amount-card {
+        border-radius: 26px;
+        padding: 20px 20px 18px;
+        margin-bottom: 14px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .amount-card::after {
+        content: '';
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.14);
+        top: -70px;
+        right: -50px;
+      }
+
+      .amount-card-label {
+        font-size: 12.5px;
+        font-weight: 700;
+        opacity: 0.85;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .amount-card-label input[type="date"] {
+        background: rgba(255, 255, 255, 0.22);
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        font-size: 12px;
+        min-height: 30px;
+        padding: 4px 10px;
+        width: auto;
+        border-radius: 999px;
+        color-scheme: dark;
+      }
+
+      .amount-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .amount-row input {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-family: "Sora", sans-serif;
+        font-size: 34px;
+        font-weight: 800;
+        padding: 0;
+        min-height: unset;
+        width: 100%;
+      }
+
+      .amount-row input::placeholder { color: rgba(255, 255, 255, 0.55); }
+      .amount-row input:focus { outline: none; box-shadow: none; }
+
+      .amount-currency {
+        font-family: "Sora", sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        opacity: 0.85;
+        flex-shrink: 0;
+      }
+
+      /* ---------- Task list ---------- */
+
+      #taskList { display: grid; gap: 10px; }
+
+      .task {
+        background: var(--surface);
+        border-radius: 20px;
+        padding: 14px;
+        box-shadow: var(--shadow);
+        display: grid;
+        gap: 10px;
+      }
+
+      .task-top { display: flex; align-items: flex-start; gap: 12px; }
+
+      .task-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        flex-shrink: 0;
+      }
+
+      .task-icon svg { width: 19px; height: 19px; stroke: currentColor; }
+
+      .task-body { flex: 1; min-width: 0; }
+
+      .task-title { font-weight: 700; font-size: 15px; line-height: 1.3; }
+
+      .task-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+      .icon-action {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .icon-action svg { width: 15px; height: 15px; stroke: currentColor; }
+      .icon-action.done { background: rgba(16, 185, 129, 0.14); color: #0ea678; }
+      .icon-action.postpone-btn { background: var(--surface-soft); color: var(--ink-soft); }
+      .icon-action:active { transform: scale(0.9); }
+
+      .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        padding: 4px 10px 4px 4px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--ink-soft);
+        background: var(--surface-soft);
+      }
+
+      .pill.pill-plain { padding: 4px 10px; }
+
+      .pill .mini-avatar {
+        width: 17px;
+        height: 17px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+        font-family: "Sora", sans-serif;
+        flex-shrink: 0;
+      }
+
+      .comment {
+        font-size: 13px;
+        color: var(--ink-soft);
+        line-height: 1.4;
+        padding-left: 54px;
+      }
+
+      .postpone {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        border-top: 1px dashed var(--line);
+        padding-top: 12px;
+      }
+
+      .postpone.open { display: grid; animation: rise 0.2s ease; }
+      .postpone .wide { display: flex; gap: 8px; }
+
+      .status {
+        min-height: 20px;
+        color: var(--ink-soft);
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        padding: 8px 0 2px;
+      }
+
+      .error { color: #d64550; }
+
+      .empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink-soft);
+        text-align: center;
+        padding: 40px 12px;
+        font-weight: 600;
+      }
+
+      .empty svg { width: 32px; height: 32px; stroke: var(--ink-faint); }
+
+      /* ---------- Operation history (expense / income / saving) ---------- */
+
+      .history-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 20px 2px 10px;
+      }
+
+      .history-head h3 {
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--ink);
+      }
+
+      .history-head .history-total {
+        font-family: "Sora", sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--ink-soft);
+      }
+
+      .history-list { display: grid; gap: 8px; }
+
+      .history-item {
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 12px 14px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .history-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        flex-shrink: 0;
+        font-family: "Sora", sans-serif;
+        font-weight: 800;
+        font-size: 13px;
+        margin-top: 1px;
+      }
+
+      .history-body { flex: 1; min-width: 0; }
+
+      .history-top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .history-title {
+        font-weight: 700;
+        font-size: 13.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .history-amount {
+        font-family: "Sora", sans-serif;
+        font-weight: 800;
+        font-size: 14px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .history-amount.negative { color: #d64550; }
+      .history-amount.positive { color: #0ea678; }
+
+      .history-meta {
+        font-size: 11.5px;
+        color: var(--ink-soft);
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .history-comment {
+        font-size: 11.5px;
+        color: var(--ink-soft);
+        margin-top: 3px;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.4;
+      }
+
+      .history-empty {
+        text-align: center;
+        color: var(--ink-faint);
+        font-size: 12.5px;
+        padding: 18px 0;
+        font-weight: 600;
+      }
+
+      /* ---------- Bottom nav ---------- */
+
+      .tabbar {
+        position: fixed;
+        left: 50%;
+        bottom: calc(14px + env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        display: flex;
+        gap: 2px;
+        padding: 6px;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(18px);
+        border-radius: 22px;
+        box-shadow: var(--shadow-lg);
+        z-index: 20;
+        width: calc(100% - 32px);
+        max-width: 448px;
+      }
+
+      .tab {
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 4px;
-        background: none;
+        gap: 3px;
+        min-height: 56px;
         border: none;
-        color: var(--ink-soft);
-        cursor: pointer;
-        padding: 6px 0;
-        border-radius: var(--radius-sm);
-        transition: all 0.15s;
+        border-radius: 16px;
+        background: transparent;
+        color: var(--ink-faint);
+        font-size: 10.5px;
+        font-weight: 700;
       }
-      .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.15s; }
-      .nav-item span { font-size: 10px; font-weight: 700; font-family: var(--font-sora); letter-spacing: -0.1px; }
-      .nav-item.active { color: var(--primary); background: var(--primary-light); }
-      .nav-item.active svg { transform: translateY(-1px); }
-      .nav-item.nav-expense.active { color: var(--expense); background: var(--expense-light); }
-      .nav-item.nav-income.active { color: var(--income); background: var(--income-light); }
-      .nav-item.nav-saving.active { color: var(--saving); background: var(--saving-light); }
-      .collapsible {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .collapsible.open { max-height: 1000px; }
-      .section-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 4px; }
-      .section-title { font-family: var(--font-sora); font-size: 16px; font-weight: 800; color: var(--ink); }
-      #status {
-        position: fixed;
-        top: calc(12px + var(--inset-top));
-        left: 50%;
-        transform: translateX(-50%) translateY(-60px);
-        background: var(--ink);
+
+      .tab svg { width: 19px; height: 19px; stroke: currentColor; transition: transform 0.18s ease; }
+
+      .tab.active {
         color: #fff;
-        padding: 10px 20px;
-        border-radius: 30px;
-        font-size: 13px;
-        font-weight: 600;
-        box-shadow: var(--shadow-lg);
-        z-index: 9999;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        pointer-events: none;
-        max-width: 90%;
-        text-align: center;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        box-shadow: 0 10px 18px -8px var(--accent-b);
       }
-      #status.show { transform: translateX(-50%) translateY(0); }
-      #status.error { background: var(--expense); }
-      .empty-state { text-align: center; padding: 40px 20px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+
+      .tab.active svg { transform: translateY(-1px); }
+
+      @media (max-width: 380px) {
+        .grid { grid-template-columns: 1fr; }
+        h1.title { font-size: 20px; }
+      }
     </style>
   </head>
-  <body>
-    <div id="status"></div>
-    <header>
-      <h1 id="headerTitle">Наш Дом</h1>
-      <p id="headerSubtitle">Синхронизация...</p>
-    </header>
+  <body data-context="tasks">
+    <main class="app">
+      <div class="header-row">
+        <div>
+          <p class="greeting-eyebrow" id="dateLabel">Сегодня</p>
+          <h1 class="title">Наш дом</h1>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="icon-btn" id="addHomeBtn" type="button" aria-label="Добавить на главный экран" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+          </button>
+          <button class="icon-btn" id="refreshTasks" type="button" aria-label="Обновить">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="debug" id="debugLabel"></div>
 
-    <main class="view" id="todo">
-      <div class="section-title-row">
-        <h2 class="section-title">Активные дела</h2>
-        <button class="btn btn-text" id="toggleTaskFormBtn">+ Новое дело</button>
+      <div class="balance-card" id="balanceCard">
+        <div class="balance-item">
+          <span class="balance-label">Доходы</span>
+          <span class="balance-value" id="balIncome">0 ₸</span>
+        </div>
+        <div class="balance-item">
+          <span class="balance-label">Расходы</span>
+          <span class="balance-value" id="balExpense">0 ₸</span>
+        </div>
+        <div class="balance-item balance-item-main" id="balanceMainItem">
+          <span class="balance-label">Доступно</span>
+          <span class="balance-value" id="balAvailable">0 ₸</span>
+        </div>
+        <div class="balance-item">
+          <span class="balance-label">Копилка</span>
+          <span class="balance-value" id="balSavings">0 ₸</span>
+        </div>
       </div>
 
-      <div class="collapsible" id="taskFormWrap">
-        <form class="card" id="taskForm">
-          <div class="grid">
-            <label class="wide">
-              Что нужно сделать?
-              <input type="text" name="task" placeholder="Купить молоко, помыть окно..." required>
+      <section class="view active" id="tasks">
+        <div class="section-head"><h2>Дела на сегодня</h2></div>
+
+        <div class="chip-track">
+          <select id="taskWho" class="chip-native" data-field="taskWho" data-with-all="1" data-chip="avatar"></select>
+          <div class="chip-track" data-for="taskWho" style="padding:2px 2px 0"></div>
+          <label class="toggle-chip">
+            <input id="taskToday" type="checkbox">
+            <span class="toggle-face">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+              Сегодня
+            </span>
+          </label>
+        </div>
+
+        <button class="add-toggle" id="toggleTaskForm" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Новое дело
+        </button>
+
+        <div class="collapsible" id="taskFormWrap">
+          <form class="card" id="taskForm">
+            <div class="grid">
+              <label class="wide">
+                Дело
+                <input name="task" placeholder="Что нужно сделать" required>
+              </label>
+              <label class="wide">
+                Ответственный
+                <select id="taskFormResponsible" name="responsible" class="chip-native" data-field="taskWho" data-chip="avatar"></select>
+                <div class="chip-track" data-for="taskFormResponsible"></div>
+              </label>
+              <label>
+                Срок
+                <input name="deadline" type="date">
+              </label>
+              <label class="wide">
+                Комментарий
+                <textarea name="comment" placeholder="Необязательно"></textarea>
+              </label>
+            </div>
+            <div class="actions">
+              <button class="primary" type="submit">Создать дело</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="taskList"></div>
+      </section>
+
+      <section class="view" id="expense">
+        <div class="section-head"><h2>Новый расход</h2></div>
+        <form id="expenseForm">
+          <div class="amount-card">
+            <div class="amount-card-label">
+              <span>Сумма расхода</span>
+              <input name="date" type="date">
+            </div>
+            <div class="amount-row">
+              <input name="amount" inputmode="decimal" placeholder="0">
+              <span class="amount-currency">₸</span>
+            </div>
+          </div>
+          <div class="card">
+            <label class="wide" style="margin-bottom:10px">
+              Кто
+              <select id="expenseWho" name="who" class="chip-native" data-field="expenseWho" data-chip="avatar"></select>
+              <div class="chip-track" data-for="expenseWho"></div>
             </label>
-            <label class="wide">
-              Ответственный
-              <select id="taskFormResponsible" name="responsible" class="chip-native" data-field="responsible" data-chip="avatar"></select>
-              <div class="chip-track" data-for="taskFormResponsible"></div>
+            <label class="wide" style="margin-bottom:10px">
+              Категория
+              <select id="expenseCategory" name="category" class="chip-native" data-field="expenseCategory" data-chip="plain"></select>
+              <div class="chip-track" data-for="expenseCategory"></div>
             </label>
-            <label>
-              Дедлайн
-              <input type="date" name="deadline">
-            </label>
-            <label>
-              Статус
-              <select name="status">
-                <option value="В планах" selected>В планах</option>
-                <option value="В процессе">В процессе</option>
-                <option value="Срочно">Срочно</option>
-              </select>
+            <label class="wide" style="margin-bottom:10px">
+              Способ оплаты
+              <select id="expenseMethod" name="method" class="chip-native" data-field="expenseMethod" data-chip="plain"></select>
+              <div class="chip-track" data-for="expenseMethod"></div>
             </label>
             <label class="wide">
               Комментарий
-              <textarea name="comment" placeholder="Детали..."></textarea>
+              <textarea name="comment" placeholder="Необязательно"></textarea>
             </label>
-            <button type="submit" class="btn wide">Добавить дело</button>
+            <div class="actions">
+              <button class="primary" type="submit">Записать расход</button>
+            </div>
           </div>
         </form>
-      </div>
 
-      <div class="card" style="padding:10px 14px; margin-bottom:16px; display:flex; align-items:center; gap:10px">
-        <span style="font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px">Кто:</span>
-        <div class="chip-track" style="margin:0">
-          <select id="taskWho" class="chip-native" data-field="responsible" data-with-all="1" data-chip="avatar"></select>
-          <div class="chip-track" data-for="taskWho" style="padding:2px 2px 0"></div>
+        <div class="history-head">
+          <h3>История расходов</h3>
+          <span class="history-total" id="expenseHistoryTotal"></span>
         </div>
-      </div>
+        <div id="expenseHistory" class="history-list"></div>
+      </section>
 
-      <div id="taskList"></div>
+      <section class="view" id="income">
+        <div class="section-head"><h2>Новый доход</h2></div>
+        <form id="incomeForm">
+          <div class="amount-card">
+            <div class="amount-card-label">
+              <span>Сумма дохода</span>
+              <input name="date" type="date">
+            </div>
+            <div class="amount-row">
+              <input name="amount" inputmode="decimal" placeholder="0">
+              <span class="amount-currency">₸</span>
+            </div>
+          </div>
+          <div class="card">
+            <label class="wide" style="margin-bottom:10px">
+              Кто
+              <select id="incomeWho" name="who" class="chip-native" data-field="incomeWho" data-chip="avatar"></select>
+              <div class="chip-track" data-for="incomeWho"></div>
+            </label>
+            <label class="wide" style="margin-bottom:10px">
+              Категория
+              <select id="incomeCategory" name="category" class="chip-native" data-field="incomeCategory" data-chip="plain"></select>
+              <div class="chip-track" data-for="incomeCategory"></div>
+            </label>
+            <label class="wide" style="margin-bottom:10px">
+              Способ
+              <select id="incomeMethod" name="method" class="chip-native" data-field="incomeMethod" data-chip="plain"></select>
+              <div class="chip-track" data-for="incomeMethod"></div>
+            </label>
+            <label class="wide">
+              Комментарий
+              <textarea name="comment" placeholder="Необязательно"></textarea>
+            </label>
+            <div class="actions">
+              <button class="primary" type="submit">Записать доход</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="history-head">
+          <h3>История доходов</h3>
+          <span class="history-total" id="incomeHistoryTotal"></span>
+        </div>
+        <div id="incomeHistory" class="history-list"></div>
+      </section>
+
+      <section class="view" id="saving">
+        <div class="section-head"><h2>Пополнить копилку</h2></div>
+        <form id="savingForm">
+          <div class="amount-card">
+            <div class="amount-card-label">
+              <span>Сумма взноса</span>
+              <input name="date" type="date">
+            </div>
+            <div class="amount-row">
+              <input name="amount" inputmode="decimal" placeholder="0">
+              <span class="amount-currency">₸</span>
+            </div>
+          </div>
+          <div class="card">
+            <label class="wide" style="margin-bottom:10px">
+              Кто
+              <select id="savingWho" name="who" class="chip-native" data-field="savingWho" data-chip="avatar"></select>
+              <div class="chip-track" data-for="savingWho"></div>
+            </label>
+            <label class="wide">
+              На что
+              <input name="purpose" placeholder="Цель">
+            </label>
+            <div class="actions">
+              <button class="primary" type="submit">Положить в копилку</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="history-head">
+          <h3>Все взносы</h3>
+          <span class="history-total" id="savingHistoryTotal"></span>
+        </div>
+        <div id="savingHistory" class="history-list"></div>
+      </section>
+
+      <div class="status" id="status"></div>
     </main>
 
-    <section class="view" id="expense">
-      <div class="section-title-row">
-        <h2 class="section-title">Записать расход</h2>
-      </div>
-      <form id="expenseForm">
-        <div class="card" style="text-align:center; padding:24px 18px">
-          <div style="font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px">Сумма расхода</div>
-          <div style="display:inline-flex; align-items:baseline; justify-content:center; gap:4px; width:100%">
-            <input type="number" step="any" name="amount" placeholder="0" style="font-family:var(--font-sora); font-size:36px; font-weight:800; text-align:center; background:none; padding:0; border:none; color:var(--expense); width:80%" required autofocus>
-            <span style="font-family:var(--font-sora); font-size:24px; font-weight:800; color:var(--expense)">₸</span>
-          </div>
-        </div>
-        <div class="card">
-          <label class="wide" style="margin-bottom:10px">
-            Кто
-            <select id="expenseWho" name="who" class="chip-native" data-field="responsible" data-chip="avatar"></select>
-            <div class="chip-track" data-for="expenseWho"></div>
-          </label>
-          <label class="wide" style="margin-bottom:10px">
-            Категория
-            <select id="expenseCategory" name="category" class="chip-native" data-field="category_expense" data-chip="plain"></select>
-            <div class="chip-track" data-for="expenseCategory"></div>
-          </label>
-          <label class="wide" style="margin-bottom:10px">
-            Способ оплаты
-            <select id="expenseMethod" name="method" class="chip-native" data-field="method" data-chip="plain"></select>
-            <div class="chip-track" data-for="expenseMethod"></div>
-          </label>
-          <div class="grid" style="margin-top:14px">
-            <label>
-              Когда
-              <input type="date" name="occurred_on">
-            </label>
-            <label>
-              Инфо
-              <input type="text" name="comment" placeholder="Магазин, вещь...">
-            </label>
-          </div>
-          <button type="submit" class="btn wide" style="background:var(--expense); box-shadow:0 4px 12px rgba(255,74,116,0.25); margin-top:16px">Сохранить расход</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="view" id="income">
-      <div class="section-title-row">
-        <h2 class="section-title">Записать доход</h2>
-      </div>
-      <form id="incomeForm">
-        <div class="card" style="text-align:center; padding:24px 18px">
-          <div style="font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px">Сумма дохода</div>
-          <div style="display:inline-flex; align-items:baseline; justify-content:center; gap:4px; width:100%">
-            <input type="number" step="any" name="amount" placeholder="0" style="font-family:var(--font-sora); font-size:36px; font-weight:800; text-align:center; background:none; padding:0; border:none; color:var(--income); width:80%" required>
-            <span style="font-family:var(--font-sora); font-size:24px; font-weight:800; color:var(--income)">₸</span>
-          </div>
-        </div>
-        <div class="card">
-          <label class="wide" style="margin-bottom:10px">
-            Кто
-            <select id="incomeWho" name="who" class="chip-native" data-field="responsible" data-chip="avatar"></select>
-            <div class="chip-track" data-for="incomeWho"></div>
-          </label>
-          <label class="wide" style="margin-bottom:10px">
-            Категория
-            <select id="incomeCategory" name="category" class="chip-native" data-field="category_income" data-chip="plain"></select>
-            <div class="chip-track" data-for="incomeCategory"></div>
-          </label>
-          <label class="wide" style="margin-bottom:10px">
-            Способ
-            <select id="incomeMethod" name="method" class="chip-native" data-field="method" data-chip="plain"></select>
-            <div class="chip-track" data-for="incomeMethod"></div>
-          </label>
-          <div class="grid" style="margin-top:14px">
-            <label>
-              Когда
-              <input type="date" name="occurred_on">
-            </label>
-            <label>
-              Инфо
-              <input type="text" name="comment" placeholder="Источник...">
-            </label>
-          </div>
-          <button type="submit" class="btn wide" style="background:var(--income); box-shadow:0 4px 12px rgba(0,204,153,0.25); margin-top:16px">Сохранить доход</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="view" id="saving">
-      <div class="section-title-row">
-        <h2 class="section-title">Состояние бюджета</h2>
-      </div>
-
-      <div class="widget-grid">
-        <div class="widget total">
-          <div style="display:flex; flex-direction:column; gap:2px">
-            <span class="widget-label">Остаток на картах</span>
-            <span class="widget-val" id="totalBalance">0 ₸</span>
-          </div>
-          <svg style="width:24px; height:24px; stroke:var(--primary); fill:none; stroke-width:2" viewBox="0 0 24 24"><rect width="22" height="16" x="1" y="4" rx="3"/><path d="M1 10h22M5 14h2"/></svg>
-        </div>
-        <div class="widget expense">
-          <span class="widget-label">Расходы мес.</span>
-          <span class="widget-val" id="monthExpense">0 ₸</span>
-        </div>
-        <div class="widget income">
-          <span class="widget-label">Доходы мес.</span>
-          <span class="widget-val" id="monthIncome">0 ₸</span>
-        </div>
-        <div class="widget saving wide" style="flex-direction:row; justify-content:space-between; align-items:center">
-          <div style="display:flex; flex-direction:column; gap:2px">
-            <span class="widget-label">Всего в копилке</span>
-            <span class="widget-val" id="totalSavings" style="color:var(--saving)">0 ₸</span>
-          </div>
-          <svg style="width:24px; height:24px; stroke:var(--saving); fill:none; stroke-width:2" viewBox="0 0 24 24"><path d="M19 5c0-1.66-4-3-9-3S1 3.34 1 5s4 3 9 3 9-1.34 9-3A2.34 2.34 0 0 0 10 2"/><path d="M19 5v14c0 1.66-4 3-9 3S1 20.66 1 19V5"/><path d="M1 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
-        </div>
-      </div>
-
-      <div class="section-title-row" style="margin-top:24px">
-        <h2 class="section-title">Пополнить копилку</h2>
-      </div>
-      <form id="savingForm">
-        <div class="card" style="text-align:center; padding:24px 18px">
-          <div style="font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px">Сумма отложения</div>
-          <div style="display:inline-flex; align-items:baseline; justify-content:center; gap:4px; width:100%">
-            <input type="number" step="any" name="amount" placeholder="0" style="font-family:var(--font-sora); font-size:36px; font-weight:800; text-align:center; background:none; padding:0; border:none; color:var(--saving); width:80%" required>
-            <span style="font-family:var(--font-sora); font-size:24px; font-weight:800; color:var(--saving)">₸</span>
-          </div>
-        </div>
-        <div class="card">
-          <label class="wide">
-            Кто откладывает
-            <select id="savingWho" name="who" class="chip-native" data-field="responsible" data-chip="avatar"></select>
-            <div class="chip-track" data-for="savingWho"></div>
-          </label>
-          <div class="grid" style="margin-top:14px">
-            <label>
-              Когда
-              <input type="date" name="occurred_on">
-            </label>
-            <label>
-              Цель / Коммент
-              <input type="text" name="comment" placeholder="На машину, отпуск...">
-            </label>
-          </div>
-          <button type="submit" class="btn wide" style="background:var(--saving); box-shadow:0 4px 12px rgba(255,170,0,0.25); margin-top:16px">Отложить в копилку</button>
-        </div>
-      </form>
-    </section>
-
-    <nav class="nav-bar">
-      <button class="nav-item active" onclick="switchView('todo')">
-        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4m-2 8a8 8 0 11-16 0 8 8 0 0116 0z"/></svg>
-        <span>Дела</span>
+    <nav class="tabbar" aria-label="Разделы">
+      <button class="tab active" data-tab="tasks" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Дела
       </button>
-      <button class="nav-item nav-expense" onclick="switchView('expense')">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 12H8"/></svg>
-        <span>Расход</span>
+      <button class="tab" data-tab="expense" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4Z"/></svg>
+        Расход
       </button>
-      <button class="nav-item nav-income" onclick="switchView('income')">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8m-4-4h8"/></svg>
-        <span>Доход</span>
+      <button class="tab" data-tab="income" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 3h-6M21 3v6"/></svg>
+        Доход
       </button>
-      <button class="nav-item nav-saving" onclick="switchView('saving')">
-        <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-        <span>Бюджет</span>
+      <button class="tab" data-tab="saving" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9V6a2 2 0 0 0-2-2H8.5a5.5 5.5 0 0 0-5.4 4.5"/><path d="M3 10v4a2 2 0 0 0 2 2h1l1 3h3l0.6-1.8"/><path d="M14 19l0.6-1.8"/><path d="M19 9a3 3 0 0 1 3 3v1h-2"/><circle cx="8" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg>
+        Копилка
       </button>
     </nav>
 
     <script>
-      const APPS_SCRIPT_URL = "https://hgheavnzotfttjapkhik.supabase.co/functions/v1/bright-endpoint";
+      // URL of the Apps Script Web App deployment (.../exec). Declared here,
+      // at the very top, because callServer() (which uses it) is invoked
+      // by top-level code further down — and `const` is not hoisted the
+      // way function declarations are, so it must exist before that point.
+      const APPS_SCRIPT_URL = 'https://hgheavnzotfftjapkhik.supabase.co/functions/v1/bright-endpoint';
 
-      let tg = window.Telegram?.WebApp;
-      if (tg) {
-        tg.expand();
-        tg.ready();
-        if (tg.headerColor) tg.setHeaderColor('#ffffff');
-        if (tg.backgroundColor) tg.setBackgroundColor('#faf8fd');
-      }
+      const tg = window.Telegram && window.Telegram.WebApp;
+      const initData = tg ? tg.initData : '';
+      const state = { today: '', tasks: [], options: {}, finance: {} };
 
-      let state = {
-        today: new Date().toISOString().split('T')[0],
-        tasks: [],
-        finance: { income: 0, expense: 0, savings: 0 },
-        options: { responsible: [], category_expense: [], category_income: [], method: [] },
-        filters: { todoWho: 'ALL' },
-        debugSpreadsheetName: ''
-      };
+      const AVATAR_PALETTE = ['#ff6f91', '#7c6ff0', '#10b981', '#f6a94a', '#2fb4c9', '#e0674a', '#8a5fb0'];
+      const MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+      const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
 
-      window.addEventListener('DOMContentLoaded', () => {
-        initDefaults();
-        loadData();
-        setupFormListeners();
-        setupToggleForm();
-      });
+      const TASK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+      const CALENDAR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>';
+      const EMPTY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+      const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+      const REDO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
 
-      function initDefaults() {
-        document.querySelectorAll('input[type="date"]').forEach(inp => {
-          inp.value = state.today;
-        });
-      }
+      if (tg) { tg.ready(); tg.expand(); }
 
-      function switchView(viewId) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-bar .nav-item').forEach(i => i.classList.remove('active'));
-        
-        const targetView = document.getElementById(viewId);
-        if (targetView) targetView.focus();
+      initAddToHomeScreen();
 
-        document.getElementById(viewId).classList.add('active');
-        const btn = document.querySelector(`.nav-bar .nav-${viewId}`) || document.querySelector('.nav-bar .nav-item:first-child');
-        if (btn) btn.classList.add('active');
+      function initAddToHomeScreen() {
+        const btn = document.getElementById('addHomeBtn');
 
-        if (tg && tg.HapticFeedback) {
-          tg.HapticFeedback.impactOccurred('light');
+        // Method only exists on recent Telegram clients (Bot API 8.0+).
+        // Older clients (e.g. 6.0) don't just skip unknown methods here —
+        // they throw synchronously, so this whole thing must be wrapped
+        // in try/catch or it can abort the rest of the script.
+        try {
+          if (!tg || typeof tg.checkHomeScreenStatus !== 'function' || typeof tg.addToHomeScreen !== 'function') {
+            return;
+          }
+
+          tg.checkHomeScreenStatus((status) => {
+            // status: 'unsupported' | 'unknown' | 'added' | 'missed'
+            if (status === 'missed' || status === 'unknown') {
+              btn.style.display = 'flex';
+            }
+          });
+
+          btn.addEventListener('click', () => {
+            try {
+              tg.addToHomeScreen();
+            } catch (error) {
+              console.warn('addToHomeScreen unsupported:', error);
+            }
+          });
+
+          tg.onEvent('homeScreenAdded', () => {
+            btn.style.display = 'none';
+            setStatus('Ярлык добавлен на главный экран.');
+          });
+        } catch (error) {
+          // Unsupported on this client version — just hide the button and move on.
+          console.warn('Home screen shortcut unsupported on this client:', error);
         }
       }
 
-      function setupToggleForm() {
-        const btn = document.getElementById('toggleTaskFormBtn');
-        const wrap = document.getElementById('taskFormWrap');
-        if(!btn || !wrap) return;
-        btn.addEventListener('click', () => {
-          if (wrap.classList.contains('open')) {
-            wrap.classList.remove('open');
-            btn.textContent = '+ Новое дело';
-          } else {
-            wrap.classList.add('open');
-            btn.textContent = 'Свернуть форму';
-            wrap.querySelector('input[name="task"]')?.focus();
-          }
-        });
-      }
+      document.querySelectorAll('.tab').forEach((tab) => {
+        tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+      });
 
-      function loadData() {
-        setStatus("Загрузка актуального состояния...");
-        request('getAppState')
-          .then(data => {
-            state = { ...state, ...data };
-            if (state.today) {
-              document.querySelectorAll('input[type="date"]').forEach(inp => {
-                if(!inp.value) inp.value = state.today;
-              });
-            }
-            if (state.debugSpreadsheetName) {
-              document.getElementById('headerTitle').textContent = "Наш Дом";
-              document.getElementById('headerSubtitle').textContent = `База данных: ${state.debugSpreadsheetName}`;
-            }
-            populateAllSelects();
-            renderAll();
-            setStatus("");
-          })
-          .catch(err => {
-            showError("Не удалось связаться с Supabase: " + err.message);
-          });
+      document.getElementById('refreshTasks').addEventListener('click', () => {
+        const context = document.body.dataset.context;
+        if (context === 'tasks') {
+          loadTasks();
+        } else {
+          loadFinance();
+        }
+      });
+      document.getElementById('taskWho').addEventListener('change', loadTasks);
+      document.getElementById('taskToday').addEventListener('change', loadTasks);
+
+      document.getElementById('toggleTaskForm').addEventListener('click', () => {
+        document.getElementById('taskFormWrap').classList.toggle('open');
+        document.getElementById('toggleTaskForm').classList.toggle('open');
+      });
+
+      bindForm('expenseForm', 'addExpense');
+      bindForm('incomeForm', 'addIncome');
+      bindForm('savingForm', 'addSaving');
+      bindTaskForm();
+
+      callServer('getAppState', {})
+        .then((result) => {
+          state.today = result.today;
+          state.tasks = result.tasks || [];
+          state.options = result.options || {};
+          state.finance = result.finance || {};
+          fillDates(result.today);
+          showDebug(result.debugSpreadsheetName);
+          showDate(result.today);
+          populateAllSelects();
+          renderTasks(state.tasks);
+          renderFinance();
+        })
+        .catch(showError);
+
+      function activateTab(name) {
+        document.querySelectorAll('.tab').forEach((tab) => {
+          tab.classList.toggle('active', tab.dataset.tab === name);
+        });
+        document.querySelectorAll('.view').forEach((view) => {
+          view.classList.toggle('active', view.id === name);
+        });
+        document.body.dataset.context = name;
+
+        if (name === 'expense' || name === 'income' || name === 'saving') {
+          loadFinance();
+        }
       }
 
       function populateAllSelects() {
-        document.querySelectorAll('select[data-field]').forEach(select => {
-          const fieldName = select.getAttribute('data-field');
-          const withAll = select.getAttribute('data-with-all') === "1";
-          const type = select.getAttribute('data-chip') || 'plain';
-          const items = state.options[fieldName] || [];
-          
-          let html = '';
-          if (withAll) {
-            html += `<option value="ALL" selected>Все члены семьи</option>`;
+        document.querySelectorAll('select[data-field]').forEach((select) => {
+          const fieldName = select.dataset.field;
+          const options = state.options[fieldName] || [];
+          const withAll = select.dataset.withAll === '1';
+          populateSelect(select, options, { withAll });
+
+          if (select.dataset.chip) {
+            const track = document.querySelector('.chip-track[data-for="' + select.id + '"]');
+            if (track) { renderChips(select, track, { avatar: select.dataset.chip === 'avatar' }); }
           }
-          items.forEach((val, idx) => {
-            const sel = (!withAll && idx === 0) ? 'selected' : '';
-            html += `<option value="${val}" ${sel}>${val}</option>`;
-          });
-          select.innerHTML = html;
-          buildChips(select, type);
         });
       }
 
-      function buildChips(nativeSelect, type) {
-        const id = nativeSelect.id;
-        let track = document.querySelector(`.chip-track[data-for="${id}"]`);
-        if (!track) return;
-        
-        const renderTracks = () => {
-          let html = '';
-          Array.from(nativeSelect.options).forEach(opt => {
-            const isSel = opt.selected;
-            if (type === 'avatar') {
-              const letter = opt.value === 'ALL' ? '?' : opt.value.charAt(0);
-              html += `
-                <div class="chip ${isSel?'selected':''}" data-value="${opt.value}">
-                  <div class="chip-avatar">${letter}</div>
-                  <span>${opt.text}</span>
-                </div>`;
-            } else {
-              html += `
-                <div class="chip ${isSel?'selected':''}" data-value="${opt.value}">
-                  <span>${opt.text}</span>
-                </div>`;
-            }
-          });
-          track.innerHTML = html;
+      function populateSelect(select, options, settings) {
+        settings = settings || {};
+        const previousValue = select.value;
+        select.innerHTML = '';
 
-          track.querySelectorAll('.chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-              nativeSelect.value = chip.getAttribute('data-value');
-              nativeSelect.dispatchEvent(new Event('change'));
-            });
-          });
-        };
-
-        nativeSelect.addEventListener('change', () => {
-          renderTracks();
-        });
-
-        renderTracks();
-      }
-
-      function renderAll() {
-        renderTasks();
-        renderFinance();
-      }
-
-      function renderFinance() {
-        const f = state.finance || { income: 0, expense: 0, savings: 0 };
-        const inc = Number(f.income || 0);
-        const exp = Number(f.expense || 0);
-        const sav = Number(f.savings || 0);
-        const cardBalance = inc - exp - sav;
-
-        document.getElementById('totalBalance').textContent = formatMoney(cardBalance);
-        document.getElementById('monthExpense').textContent = formatMoney(exp);
-        document.getElementById('monthIncome').textContent = formatMoney(inc);
-        document.getElementById('totalSavings').textContent = formatMoney(sav);
-      }
-
-      function renderTasks() {
-        const container = document.getElementById('taskList');
-        if (!container) return;
-        container.innerHTML = '';
-        
-        let list = state.tasks || [];
-        if (state.filters.todoWho !== 'ALL') {
-          list = list.filter(t => t.responsible === state.filters.todoWho);
+        if (settings.withAll) {
+          select.appendChild(makeOption('', 'Все'));
         }
 
-        if (list.length === 0) {
-          container.innerHTML = `<div class="empty-state">Нет активных дел для выбранного фильтра. Красота!</div>`;
+        if (!options.length) {
+          if (!settings.withAll) {
+            select.appendChild(makeOption('', 'Нет вариантов в таблице'));
+            select.disabled = true;
+          }
           return;
         }
 
-        list.forEach(t => {
-          const item = document.createElement('div');
-          item.className = `task-item ${t.done ? 'done' : ''}`;
-          
-          let badgesHtml = '';
-          if (t.status && t.status !== 'В планах') {
-            badgesHtml += `<span class="task-badge" style="background:var(--primary-light); color:var(--primary-ink)">${t.status}</span>`;
-          }
-          if (t.deadline) {
-            const dStr = t.deadline.split('T')[0];
-            let bCls = '';
-            if (dStr === state.today) bCls = 'date-today';
-            else if (dStr < state.today) bCls = 'date-overdue';
-            badgesHtml += `<span class="task-badge ${bCls}">${formatDateHuman(dStr)}</span>`;
-          }
-          if (t.comment) {
-            badgesHtml += `<span class="task-badge" style="max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(t.comment)}</span>`;
+        select.disabled = false;
+        options.forEach((option) => {
+          select.appendChild(makeOption(option, option));
+        });
+
+        if (previousValue && options.indexOf(previousValue) !== -1) {
+          select.value = previousValue;
+        }
+      }
+
+      function makeOption(value, label) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        return option;
+      }
+
+      function renderChips(select, track, opts) {
+        opts = opts || {};
+        track.innerHTML = '';
+
+        if (select.disabled) {
+          const empty = document.createElement('span');
+          empty.className = 'chip-empty';
+          empty.textContent = 'Добавьте варианты в таблицу';
+          track.appendChild(empty);
+          return;
+        }
+
+        Array.from(select.options).forEach((opt) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'chip';
+          if (opt.value === select.value) { btn.classList.add('active'); }
+
+          if (opts.avatar && opt.value) {
+            const dot = document.createElement('span');
+            dot.className = 'chip-dot';
+            dot.style.background = colorForName(opt.value);
+            dot.textContent = initialOf(opt.value);
+            btn.appendChild(dot);
           }
 
-          const avatarLetter = t.responsible ? t.responsible.charAt(0) : '?';
+          btn.appendChild(document.createTextNode(opt.textContent));
 
+          btn.addEventListener('click', () => {
+            select.value = opt.value;
+            select.dispatchEvent(new Event('change'));
+            Array.from(track.children).forEach((child) => child.classList && child.classList.remove('active'));
+            btn.classList.add('active');
+          });
+
+          track.appendChild(btn);
+        });
+      }
+
+      function bindForm(formId, serverFunction) {
+        const form = document.getElementById(formId);
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          setStatus('Сохраняю...');
+
+          callServer(serverFunction, formToObject(form))
+            .then((result) => {
+              setStatus(result.message || 'Готово.');
+              const savedDate = form.elements.date ? form.elements.date.value : '';
+              form.reset();
+              if (form.elements.date) {
+                form.elements.date.value = savedDate || state.today;
+              }
+              populateAllSelects();
+              if (result.finance) {
+                state.finance = result.finance;
+                renderFinance();
+              }
+              if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
+            })
+            .catch(showError);
+        });
+      }
+
+      function bindTaskForm() {
+        const form = document.getElementById('taskForm');
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          setStatus('Сохраняю...');
+
+          callServer('addTask', formToObject(form))
+            .then((result) => {
+              setStatus(result.message || 'Готово.');
+              form.reset();
+              populateAllSelects();
+              document.getElementById('taskFormWrap').classList.remove('open');
+              document.getElementById('toggleTaskForm').classList.remove('open');
+
+              if (result.tasks) {
+                state.tasks = result.tasks;
+                renderTasks(state.tasks);
+              }
+              if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
+            })
+            .catch(showError);
+        });
+      }
+
+      function loadTasks(options) {
+        options = options || {};
+        if (!options.silent) { setStatus('Обновляю дела...'); }
+
+        callServer('getTasks', {
+          who: document.getElementById('taskWho').value,
+          onlyToday: document.getElementById('taskToday').checked,
+        })
+          .then((result) => {
+            state.tasks = result.tasks || [];
+            renderTasks(state.tasks);
+            if (!options.silent) { setStatus(''); }
+          })
+          .catch((error) => { if (!options.silent) { showError(error); } });
+      }
+
+      function loadFinance(options) {
+        options = options || {};
+
+        callServer('getFinance', {})
+          .then((result) => {
+            state.finance = result.finance || {};
+            renderFinance();
+          })
+          .catch((error) => { if (!options.silent) { showError(error); } });
+      }
+
+      // Apps Script has no push channel to the browser, so "live" updates
+      // (e.g. someone editing the spreadsheet directly, or deleting rows)
+      // are approximated by polling quietly in the background, plus an
+      // immediate refresh whenever the app regains focus/visibility.
+      const LIVE_REFRESH_INTERVAL_MS = 15000;
+
+      function silentRefreshAll() {
+        loadTasks({ silent: true });
+        loadFinance({ silent: true });
+      }
+
+      setInterval(silentRefreshAll, LIVE_REFRESH_INTERVAL_MS);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') { silentRefreshAll(); }
+      });
+
+      window.addEventListener('focus', silentRefreshAll);
+
+      function complete(rowNumber) {
+        setStatus('Переношу задачу в архив...');
+        callServer('completeTask', { rowNumber })
+          .then((result) => {
+            setStatus(result.message || 'Готово.');
+            if (result.tasks) {
+              state.tasks = result.tasks;
+              renderTasks(state.tasks);
+            } else {
+              loadTasks();
+            }
+            if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
+          })
+          .catch(showError);
+      }
+
+      function postpone(rowNumber, date, time) {
+        setStatus('Переношу дело...');
+        callServer('postponeTask', { rowNumber, date, time })
+          .then((result) => {
+            setStatus(result.message || 'Готово.');
+            if (result.tasks) {
+              state.tasks = result.tasks;
+              renderTasks(state.tasks);
+            } else {
+              loadTasks();
+            }
+            if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
+          })
+          .catch(showError);
+      }
+
+      function renderTasks(tasks) {
+        const list = document.getElementById('taskList');
+
+        if (!tasks.length) {
+          list.innerHTML = '<div class="empty">' + EMPTY_ICON + '<span>Активных дел нет — можно выдохнуть.</span></div>';
+          return;
+        }
+
+        list.innerHTML = '';
+
+        tasks.forEach((task) => {
+          const item = document.createElement('article');
+          item.className = 'task';
           item.innerHTML = `
-            <div class="task-check" onclick="completeTask(${t.id})"></div>
-            <div class="task-body">
-              <div class="task-title">${escapeHtml(t.task)}</div>
-              <div class="task-meta">
-                <div class="chip-avatar">${avatarLetter}</div>
-                ${badgesHtml}
+            <div class="task-top">
+              <div class="task-icon">${TASK_ICON}</div>
+              <div class="task-body">
+                <div class="task-title"></div>
+                <div class="meta"></div>
+              </div>
+              <div class="task-row-actions">
+                <button class="icon-action done" type="button" data-action="complete" aria-label="Выполнено">${CHECK_ICON}</button>
+                <button class="icon-action postpone-btn" type="button" data-action="toggle-postpone" aria-label="Перенести">${REDO_ICON}</button>
+              </div>
+            </div>
+            <div class="comment"></div>
+            <div class="postpone">
+              <label>
+                Новая дата
+                <input type="date">
+              </label>
+              <label>
+                Время
+                <input type="time">
+              </label>
+              <div class="wide">
+                <button class="primary" type="button" data-action="save-postpone">Сохранить</button>
+                <button class="secondary" type="button" data-action="cancel-postpone">Отмена</button>
               </div>
             </div>
           `;
+
+          item.querySelector('.task-title').textContent = task.task;
+          item.querySelector('.task-icon').style.background = colorForName(task.responsible || task.task);
+
+          const metaEl = item.querySelector('.meta');
+          metaEl.innerHTML = '';
+
+          if (task.responsible) { metaEl.appendChild(makeAvatarPill(task.responsible)); }
+          if (task.status) { metaEl.appendChild(makePlainPill(task.status)); }
+          if (task.deadline) { metaEl.appendChild(makeIconPill(CALENDAR_ICON, task.deadline)); }
+
+          const commentEl = item.querySelector('.comment');
+          if (task.comment) {
+            commentEl.textContent = task.comment;
+          } else {
+            commentEl.remove();
+          }
+
+          const postponePanel = item.querySelector('.postpone');
+          const dateInput = postponePanel.querySelector('input[type="date"]');
+          const timeInput = postponePanel.querySelector('input[type="time"]');
+          dateInput.value = state.today;
+
+          item.querySelector('[data-action="complete"]').addEventListener('click', () => complete(task.rowNumber));
+          item.querySelector('[data-action="toggle-postpone"]').addEventListener('click', () => {
+            postponePanel.classList.toggle('open');
+          });
+          item.querySelector('[data-action="cancel-postpone"]').addEventListener('click', () => {
+            postponePanel.classList.remove('open');
+          });
+          item.querySelector('[data-action="save-postpone"]').addEventListener('click', () => {
+            if (!dateInput.value) {
+              showError(new Error('Укажи новую дату.'));
+              return;
+            }
+            postpone(task.rowNumber, dateInput.value, timeInput.value);
+            postponePanel.classList.remove('open');
+          });
+
+          list.appendChild(item);
+        });
+      }
+
+      function renderFinance() {
+        const finance = state.finance || {};
+        const totals = finance.totals || {};
+
+        document.getElementById('balIncome').textContent = formatMoney(totals.income);
+        document.getElementById('balExpense').textContent = formatMoney(totals.expense);
+        document.getElementById('balAvailable').textContent = formatMoney(totals.available);
+        document.getElementById('balSavings').textContent = formatMoney(totals.savings);
+
+        document.getElementById('balanceMainItem').classList.toggle(
+          'balance-negative',
+          Number(totals.available || 0) < 0
+        );
+
+        document.getElementById('expenseHistoryTotal').textContent = formatMoney(totals.expense);
+        document.getElementById('incomeHistoryTotal').textContent = formatMoney(totals.income);
+        document.getElementById('savingHistoryTotal').textContent = formatMoney(totals.savings);
+
+        renderHistoryList('expenseHistory', finance.expenses || [], 'expense');
+        renderHistoryList('incomeHistory', finance.income || [], 'income');
+        renderHistoryList('savingHistory', finance.savings || [], 'saving');
+      }
+
+      function renderHistoryList(elementId, entries, kind) {
+        const container = document.getElementById(elementId);
+        if (!container) return;
+
+        if (!entries.length) {
+          container.innerHTML = '<div class="history-empty">Записей пока нет.</div>';
+          return;
+        }
+
+        container.innerHTML = '';
+
+        entries.forEach((entry) => {
+          const item = document.createElement('div');
+          item.className = 'history-item';
+
+          const icon = document.createElement('div');
+          icon.className = 'history-icon';
+          icon.style.background = colorForName(entry.who || entry.category || entry.purpose || kind);
+          icon.textContent = initialOf(entry.who);
+          item.appendChild(icon);
+
+          const body = document.createElement('div');
+          body.className = 'history-body';
+
+          const top = document.createElement('div');
+          top.className = 'history-top';
+
+          const title = document.createElement('div');
+          title.className = 'history-title';
+          title.textContent = kind === 'saving'
+            ? (entry.purpose || 'Копилка')
+            : (entry.category || (kind === 'expense' ? 'Расход' : 'Доход'));
+          top.appendChild(title);
+
+          const amount = document.createElement('div');
+          amount.className = 'history-amount ' + (kind === 'expense' ? 'negative' : 'positive');
+          amount.textContent = (kind === 'expense' ? '−' : '+') + formatMoney(entry.amount);
+          top.appendChild(amount);
+
+          body.appendChild(top);
+
+          const metaParts = [entry.date, entry.who].filter(Boolean);
+          if (kind !== 'saving' && entry.method) { metaParts.push(entry.method); }
+
+          const meta = document.createElement('div');
+          meta.className = 'history-meta';
+          meta.textContent = metaParts.join(' · ');
+          body.appendChild(meta);
+
+          if (entry.comment) {
+            const comment = document.createElement('div');
+            comment.className = 'history-comment';
+            comment.textContent = entry.comment;
+            body.appendChild(comment);
+          }
+
+          item.appendChild(body);
           container.appendChild(item);
         });
       }
 
-      function completeTask(id) {
-        if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
-        setStatus("Завершаем задачу...");
-        
-        state.tasks = state.tasks.filter(t => t.id !== id);
-        renderTasks();
-
-        request('completeTask', { id: id })
-          .then(() => {
-            loadData();
-          })
-          .catch(err => {
-            showError("Ошибка закрытия задачи: " + err.message);
-            loadData();
-          });
+      function formatMoney(value) {
+        const num = Number(value) || 0;
+        return num.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₸';
       }
 
-      function setupFormListeners() {
-        const selectFilter = document.getElementById('taskWho');
-        if(selectFilter) {
-          selectFilter.addEventListener('change', (e) => {
-            state.filters.todoWho = e.target.value;
-            renderTasks();
-          });
-        }
-
-        document.getElementById('taskForm').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const fd = new FormData(e.target);
-          const data = Object.fromEntries(fd.entries());
-          
-          if (tg && tg.HapticFeedback) { tg.HapticFeedback.impactOccurred('medium'); }
-          setStatus("Добавляем новую задачу...");
-          
-          request('createTask', data)
-            .then(() => {
-              e.target.reset();
-              initDefaults();
-              document.getElementById('taskFormWrap').classList.remove('open');
-              document.getElementById('toggleTaskFormBtn').textContent = '+ Новое дело';
-              loadData();
-            })
-            .catch(err => showError(err));
-        });
-
-        document.getElementById('expenseForm').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const fd = new FormData(e.target);
-          const data = Object.fromEntries(fd.entries());
-          data.kind = 'expense';
-          
-          if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
-          setStatus("Записываем расход...");
-          
-          request('createTransaction', data)
-            .then(() => {
-              e.target.reset();
-              initDefaults();
-              switchView('todo');
-              loadData();
-            })
-            .catch(err => showError(err));
-        });
-
-        document.getElementById('incomeForm').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const fd = new FormData(e.target);
-          const data = Object.fromEntries(fd.entries());
-          data.kind = 'income';
-          
-          if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
-          setStatus("Записываем доход...");
-          
-          request('createTransaction', data)
-            .then(() => {
-              e.target.reset();
-              initDefaults();
-              switchView('todo');
-              loadData();
-            })
-            .catch(err => showError(err));
-        });
-
-        document.getElementById('savingForm').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const fd = new FormData(e.target);
-          const data = Object.fromEntries(fd.entries());
-          data.kind = 'saving';
-          data.category = 'Копилка';
-          
-          if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
-          setStatus("Откладываем деньги...");
-          
-          request('createTransaction', data)
-            .then(() => {
-              e.target.reset();
-              initDefaults();
-              switchView('todo');
-              loadData();
-            })
-            .catch(err => showError(err));
-        });
+      function makeAvatarPill(name) {
+        const pill = document.createElement('span');
+        pill.className = 'pill';
+        const avatar = document.createElement('span');
+        avatar.className = 'mini-avatar';
+        avatar.style.background = colorForName(name);
+        avatar.textContent = initialOf(name);
+        pill.appendChild(avatar);
+        pill.appendChild(document.createTextNode(name));
+        return pill;
       }
 
-      function request(name, data = {}) {
-        const telegramInitData = window.Telegram?.WebApp?.initData || "";
-        const url = `${APPS_SCRIPT_URL}?action=${name}`;
-        return fetch(url, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'x-telegram-init-data': telegramInitData
-          },
-          body: JSON.stringify(data) 
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`Ошибка сервера: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((result) => {
-            if (result.success === false || !result.data) {
-              throw new Error(result.error || 'Не удалось выполнить запрос.');
-            }
-            return result.data;
-          });
+      function makePlainPill(text) {
+        const pill = document.createElement('span');
+        pill.className = 'pill pill-plain';
+        pill.textContent = text;
+        return pill;
       }
+
+      function makeIconPill(iconSvg, text) {
+        const pill = document.createElement('span');
+        pill.className = 'pill pill-plain';
+        pill.innerHTML = '<span style="width:12px;height:12px;display:inline-flex;color:var(--ink-faint)">' + iconSvg + '</span>' + escapeHtml(text);
+        return pill;
+      }
+
+      function colorForName(name) {
+        const str = String(name || '');
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) { hash = (hash * 31 + str.charCodeAt(i)) >>> 0; }
+        return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
+      }
+
+      function initialOf(name) {
+        const trimmed = String(name || '').trim();
+        return trimmed ? trimmed.charAt(0).toUpperCase() : '?';
+      }
+
+      function formToObject(form) {
+        return Array.from(new FormData(form).entries()).reduce((acc, item) => {
+          acc[item[0]] = item[1];
+          return acc;
+        }, {});
+      }
+
+      function fillDates(today) {
+        document.querySelectorAll('input[type="date"]').forEach((input) => { input.value = today; });
+      }
+
+      function showDebug(spreadsheetName) {
+        if (!spreadsheetName) return;
+        document.getElementById('debugLabel').textContent = 'Таблица: ' + spreadsheetName;
+      }
+
+      function showDate(todayIso) {
+        if (!todayIso) return;
+        const parts = todayIso.split('-').map(Number);
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        const label = WEEKDAYS_RU[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS_RU[d.getMonth()];
+        document.getElementById('dateLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
+      }
+
+function callServer(name, data) {
+  const telegramInitData = window.Telegram?.WebApp?.initData || "";
+  const url = `${APPS_SCRIPT_URL}?action=${name}`;
+  return fetch(url, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'x-telegram-init-data': telegramInitData
+    },
+    body: JSON.stringify(data) 
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((result) => {
+      if (result.success === false || !result.data) {
+        throw new Error(result.error || 'Не удалось выполнить запрос.');
+      }
+      return result.data;
+    });
+}
 
       function setStatus(message) {
         const status = document.getElementById('status');
         status.classList.remove('error');
         status.textContent = message || '';
-        if(message) status.classList.add('show');
-        else status.classList.remove('show');
       }
 
       function showError(error) {
@@ -886,7 +1585,6 @@
         const status = document.getElementById('status');
         status.classList.add('error');
         status.textContent = message;
-        status.classList.add('show');
         if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('error'); }
       }
 
@@ -897,17 +1595,6 @@
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;');
-      }
-
-      function formatMoney(num) {
-        return Number(num).toLocaleString('ru-RU') + ' ₸';
-      }
-
-      function formatDateHuman(str) {
-        if(!str) return '';
-        const parts = str.split('-');
-        if(parts.length !== 3) return str;
-        return `${parts[2]}.${parts[1]}.${parts[0].substring(2)}`;
       }
     </script>
   </body>
