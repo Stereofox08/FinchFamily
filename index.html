@@ -28,7 +28,8 @@
       body[data-context="expense"] { --accent-a: #f78fb3; --accent-b: #a78bfa; }
       body[data-context="income"]  { --accent-a: #5eead4; --accent-b: #10b981; }
       body[data-context="saving"]  { --accent-a: #ffd67e; --accent-b: #f6a94a; }
-      body[data-context="holidays"] { --accent-a: #a78bfa; --accent-b: #7c6ff0; }
+      body[data-context="archive"] { --accent-a: #a78bfa; --accent-b: #7c6ff0; }
+      body[data-context="holidays"] { --accent-a: #f6a94a; --accent-b: #ff6f91; }
 
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -876,6 +877,7 @@
         font-weight: 600;
       }
 
+      /* ---------- Нижняя навигация ---------- */
       .tabbar {
         position: fixed;
         left: 50%;
@@ -1273,7 +1275,6 @@
       const AVATAR_PALETTE = ['#ff6f91', '#7c6ff0', '#10b981', '#f6a94a', '#2fb4c9', '#e0674a', '#8a5fb0'];
       const MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
       const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
-      const HOLIDAY_ICONS = ['🎂', '🎉', '🎊', '🥳', '🎁', '💐', '🌟', '✨', '🎈', '🎀'];
 
       const TASK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
       const CALENDAR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>';
@@ -2029,7 +2030,6 @@
         }
 
         list.innerHTML = '';
-        // Сортируем по дате
         const sorted = [...holidays].sort((a, b) => String(a.date).localeCompare(String(b.date)));
 
         sorted.forEach((holiday) => {
