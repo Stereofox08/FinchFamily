@@ -307,8 +307,8 @@
   <body>
     <div id="status"></div>
     <header>
-      <h1 id="headerTitle">Планшет</h1>
-      <p id="headerSubtitle">Загрузка данных...</p>
+      <h1 id="headerTitle">Наш Дом</h1>
+      <p id="headerSubtitle">Синхронизация...</p>
     </header>
 
     <main class="view" id="todo">
@@ -529,7 +529,6 @@
     </nav>
 
     <script>
-      // ССЫЛКА НА ВАШУ EDGE ФУНКЦИЮ SUPABASE
       const APPS_SCRIPT_URL = "https://hgheavnzotfttjapkhik.supabase.co/functions/v1/bright-endpoint";
 
       let tg = window.Telegram?.WebApp;
@@ -749,7 +748,6 @@
         if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
         setStatus("Завершаем задачу...");
         
-        // Визуально гасим сразу
         state.tasks = state.tasks.filter(t => t.id !== id);
         renderTasks();
 
@@ -850,30 +848,30 @@
         });
       }
 
-function request(name, data = {}) {
-  const telegramInitData = window.Telegram?.WebApp?.initData || "";
-  const url = `${APPS_SCRIPT_URL}?action=${name}`;
-  return fetch(url, {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'x-telegram-init-data': telegramInitData
-    },
-    body: JSON.stringify(data) 
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`);
+      function request(name, data = {}) {
+        const telegramInitData = window.Telegram?.WebApp?.initData || "";
+        const url = `${APPS_SCRIPT_URL}?action=${name}`;
+        return fetch(url, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-telegram-init-data': telegramInitData
+          },
+          body: JSON.stringify(data) 
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Ошибка сервера: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((result) => {
+            if (result.success === false || !result.data) {
+              throw new Error(result.error || 'Не удалось выполнить запрос.');
+            }
+            return result.data;
+          });
       }
-      return response.json();
-    })
-    .then((result) => {
-      if (result.success === false || !result.data) {
-        throw new Error(result.error || 'Не удалось выполнить запрос.');
-      }
-      return result.data;
-    });
-}
 
       function setStatus(message) {
         const status = document.getElementById('status');
