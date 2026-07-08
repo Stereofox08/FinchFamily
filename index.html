@@ -1176,27 +1176,10 @@
 
       initAddToHomeScreen();
 
-      function initAddToHomeScreen() {
-        const btn = document.getElementById('addHomeBtn');
-
-        try {
-          if (!tg || typeof tg.checkHomeScreenStatus !== 'function' || typeof tg.addToHomeScreen !== 'function') {
-            return;
-          }
-
-          tg.checkHomeScreenStatus((status) => {
-            if (status === 'missed' || status === 'unknown') {
-              btn.style.display = 'flex';
-            }
-          });
-
-          btn.addEventListener('click', () => {
-            try {
-              tg.addToHomeScreen();
-            } catch (error) {
-              console.warn('addToHomeScreen unsupported:', error);
-            }
-          });
+function initAddToHomeScreen() {
+  const btn = document.getElementById('addHomeBtn');
+  btn.style.display = 'none';
+}
 
           tg.onEvent('homeScreenAdded', () => {
             btn.style.display = 'none';
