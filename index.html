@@ -763,7 +763,6 @@
           </button>
         </div>
       </div>
-      <div class="debug" id="debugLabel"></div>
 
       <div class="balance-card" id="balanceCard">
         <div class="balance-item">
@@ -1534,11 +1533,6 @@
 
       function fillDates(today) {
         document.querySelectorAll('input[type="date"]').forEach((input) => { input.value = today; });
-      }
-
-      function showDebug(spreadsheetName) {
-        if (!spreadsheetName) return;
-        document.getElementById('debugLabel').textContent = 'Таблица: ' + spreadsheetName;
       }
 
       function showDate(todayIso) {
