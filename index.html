@@ -1159,7 +1159,7 @@
       const tg = window.Telegram && window.Telegram.WebApp;
       const initData = tg ? tg.initData : '';
       const state = { today: '', tasks: [], archiveTasks: [], options: {}, finance: {} };
-
+      let isEditing = false;
       const AVATAR_PALETTE = ['#ff6f91', '#7c6ff0', '#10b981', '#f6a94a', '#2fb4c9', '#e0674a', '#8a5fb0'];
       const MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
       const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
