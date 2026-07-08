@@ -1181,15 +1181,6 @@ function initAddToHomeScreen() {
   btn.style.display = 'none';
 }
 
-          tg.onEvent('homeScreenAdded', () => {
-            btn.style.display = 'none';
-            setStatus('Ярлык добавлен на главный экран.');
-          });
-        } catch (error) {
-          console.warn('Home screen shortcut unsupported on this client:', error);
-        }
-      }
-
       document.querySelectorAll('.tab').forEach((tab) => {
         tab.addEventListener('click', () => activateTab(tab.dataset.tab));
       });
