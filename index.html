@@ -998,25 +998,37 @@
         const btn = document.getElementById('addHomeBtn');
 
         // Method only exists on recent Telegram clients (Bot API 8.0+).
-        if (!tg || typeof tg.checkHomeScreenStatus !== 'function' || typeof tg.addToHomeScreen !== 'function') {
-          return;
-        }
-
-        tg.checkHomeScreenStatus((status) => {
-          // status: 'unsupported' | 'unknown' | 'added' | 'missed'
-          if (status === 'missed' || status === 'unknown') {
-            btn.style.display = 'flex';
+        // Older clients (e.g. 6.0) don't just skip unknown methods here —
+        // they throw synchronously, so this whole thing must be wrapped
+        // in try/catch or it can abort the rest of the script.
+        try {
+          if (!tg || typeof tg.checkHomeScreenStatus !== 'function' || typeof tg.addToHomeScreen !== 'function') {
+            return;
           }
-        });
 
-        btn.addEventListener('click', () => {
-          tg.addToHomeScreen();
-        });
+          tg.checkHomeScreenStatus((status) => {
+            // status: 'unsupported' | 'unknown' | 'added' | 'missed'
+            if (status === 'missed' || status === 'unknown') {
+              btn.style.display = 'flex';
+            }
+          });
 
-        tg.onEvent('homeScreenAdded', () => {
-          btn.style.display = 'none';
-          setStatus('Ярлык добавлен на главный экран.');
-        });
+          btn.addEventListener('click', () => {
+            try {
+              tg.addToHomeScreen();
+            } catch (error) {
+              console.warn('addToHomeScreen unsupported:', error);
+            }
+          });
+
+          tg.onEvent('homeScreenAdded', () => {
+            btn.style.display = 'none';
+            setStatus('Ярлык добавлен на главный экран.');
+          });
+        } catch (error) {
+          // Unsupported on this client version — just hide the button and move on.
+          console.warn('Home screen shortcut unsupported on this client:', error);
+        }
       }
 
       document.querySelectorAll('.tab').forEach((tab) => {
