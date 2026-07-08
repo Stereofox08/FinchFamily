@@ -1561,14 +1561,19 @@ function callServer(name, data) {
     body: JSON.stringify(data) 
   })
     .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`);
-      }
-      return response.json();
+      // Always try to read the JSON body first, even on non-2xx responses —
+      // the backend puts the real failure reason in `error`/`message` there.
+      // Falling back to a bare status code (as before) hides the actual cause.
+      return response.json()
+        .catch(() => ({}))
+        .then((result) => ({ ok: response.ok, status: response.status, result }));
     })
-    .then((result) => {
-      if (result.success === false || !result.data) {
-        throw new Error(result.error || 'Не удалось выполнить запрос.');
+    .then(({ ok, status, result }) => {
+      if (!ok || result.success === false) {
+        throw new Error(result.error || `Ошибка сервера: ${status}`);
+      }
+      if (!result.data) {
+        throw new Error('Не удалось выполнить запрос.');
       }
       return result.data;
     });
