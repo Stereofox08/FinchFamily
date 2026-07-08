@@ -18,17 +18,17 @@
         --line: rgba(36, 31, 61, 0.08);
         --shadow: 0 14px 30px -16px rgba(60, 40, 100, 0.28);
         --shadow-lg: 0 20px 40px -18px rgba(60, 40, 100, 0.32);
-
         --accent-a: #ff9a76;
         --accent-b: #ff6f91;
         --accent-tint: rgba(255, 111, 145, 0.13);
         --tg-header-height: 65px;
       }
 
-      body[data-context="tasks"]   { --accent-a: #ff9a76; --accent-b: #ff6f91; --accent-tint: rgba(255, 111, 145, 0.13); }
-      body[data-context="expense"] { --accent-a: #f78fb3; --accent-b: #a78bfa; --accent-tint: rgba(167, 139, 250, 0.15); }
-      body[data-context="income"]  { --accent-a: #5eead4; --accent-b: #10b981; --accent-tint: rgba(16, 185, 129, 0.13); }
-      body[data-context="saving"]  { --accent-a: #ffd67e; --accent-b: #f6a94a; --accent-tint: rgba(246, 169, 74, 0.15); }
+      body[data-context="tasks"]   { --accent-a: #ff9a76; --accent-b: #ff6f91; }
+      body[data-context="expense"] { --accent-a: #f78fb3; --accent-b: #a78bfa; }
+      body[data-context="income"]  { --accent-a: #5eead4; --accent-b: #10b981; }
+      body[data-context="saving"]  { --accent-a: #ffd67e; --accent-b: #f6a94a; }
+      body[data-context="holidays"] { --accent-a: #a78bfa; --accent-b: #7c6ff0; }
 
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -62,6 +62,7 @@
         align-items: center;
         justify-content: space-between;
         margin-bottom: 18px;
+        gap: 8px;
       }
 
       .greeting-eyebrow {
@@ -91,10 +92,48 @@
         color: var(--ink-soft);
         flex-shrink: 0;
         transition: transform 0.12s ease, color 0.12s ease;
+        cursor: pointer;
       }
 
       .icon-btn:active { transform: scale(0.92); }
       .icon-btn svg { width: 19px; height: 19px; stroke: currentColor; }
+
+      .header-actions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      /* Переключатель приложений */
+      .app-switcher {
+        display: flex;
+        gap: 4px;
+        background: var(--surface-soft);
+        border-radius: 14px;
+        padding: 4px;
+        margin-bottom: 16px;
+      }
+
+      .app-switcher button {
+        flex: 1;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 11px;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--ink-soft);
+        background: transparent;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+
+      .app-switcher button.active {
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        box-shadow: 0 4px 12px -4px var(--accent-b);
+      }
+
+      .app-switcher button:active { transform: scale(0.96); }
 
       .balance-card {
         display: grid;
@@ -153,6 +192,15 @@
         .balance-item:nth-child(3) { border-left: none; }
       }
 
+      /* ---------- Приложения ---------- */
+      .app-container { display: none; }
+      .app-container.active { display: block; animation: rise 0.26s ease; }
+
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
       .section-head {
         display: flex;
         align-items: center;
@@ -164,14 +212,6 @@
         font-size: 22px;
         font-weight: 800;
         letter-spacing: -0.01em;
-      }
-
-      .view { display: none; }
-      .view.active { display: block; animation: rise 0.26s ease; }
-
-      @keyframes rise {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
       }
 
       .chip-track {
@@ -198,6 +238,7 @@
         border-radius: 999px;
         transition: all 0.15s ease;
         white-space: nowrap;
+        cursor: pointer;
       }
 
       .chip.active {
@@ -272,6 +313,7 @@
         background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
         box-shadow: var(--shadow-lg);
         transition: transform 0.12s ease;
+        cursor: pointer;
       }
 
       .add-toggle:active { transform: scale(0.98); }
@@ -341,6 +383,7 @@
         background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
         box-shadow: 0 14px 26px -12px var(--accent-b);
         transition: transform 0.12s ease;
+        cursor: pointer;
       }
 
       .primary:active { transform: scale(0.98); }
@@ -357,8 +400,7 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        justify-content:center;
-        text-align:center;
+        cursor: pointer;
       }
 
       .secondary:active { transform: scale(0.96); }
@@ -762,9 +804,7 @@
         transition: transform 0.12s ease;
       }
 
-      .edit-panel .wide button:active {
-        transform: scale(0.97);
-      }
+      .edit-panel .wide button:active { transform: scale(0.97); }
 
       .edit-panel .wide .primary {
         background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
@@ -781,6 +821,60 @@
       .history-actions { display: flex; gap: 6px; margin-left: auto; }
       .icon-action.edit { background: var(--surface-soft); color: var(--ink-soft); }
       .icon-action.delete { background: rgba(214, 69, 80, 0.12); color: #d64550; }
+
+      /* ---------- Праздники ---------- */
+      .holiday-item {
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 12px 14px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .holiday-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+
+      .holiday-body { flex: 1; }
+
+      .holiday-name {
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      .holiday-meta {
+        font-size: 12px;
+        color: var(--ink-soft);
+        margin-top: 2px;
+      }
+
+      .holiday-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .holiday-actions .icon-action {
+        width: 32px;
+        height: 32px;
+      }
+
+      .holiday-empty {
+        text-align: center;
+        color: var(--ink-faint);
+        font-size: 12.5px;
+        padding: 18px 0;
+        font-weight: 600;
+      }
 
       .tabbar {
         position: fixed;
@@ -830,6 +924,7 @@
         .grid { grid-template-columns: 1fr; }
         .filter-row, .summary-grid { grid-template-columns: 1fr; }
         h1.title { font-size: 20px; }
+        .app-switcher button { font-size: 11px; padding: 8px 10px; }
       }
     </style>
   </head>
@@ -840,254 +935,304 @@
           <p class="greeting-eyebrow" id="dateLabel">Сегодня</p>
           <h1 class="title">Наш дом</h1>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div class="header-actions">
           <button class="icon-btn" id="refreshTasks" type="button" aria-label="Обновить">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
           </button>
         </div>
       </div>
 
-      <div class="balance-card" id="balanceCard">
-        <div class="balance-item">
-          <span class="balance-label">Доходы</span>
-          <span class="balance-value" id="balIncome">0 ₸</span>
-        </div>
-        <div class="balance-item">
-          <span class="balance-label">Расходы</span>
-          <span class="balance-value" id="balExpense">0 ₸</span>
-        </div>
-        <div class="balance-item balance-item-main" id="balanceMainItem">
-          <span class="balance-label">Доступно</span>
-          <span class="balance-value" id="balAvailable">0 ₸</span>
-        </div>
-        <div class="balance-item">
-          <span class="balance-label">Копилка</span>
-          <span class="balance-value" id="balSavings">0 ₸</span>
-        </div>
+      <!-- Переключатель приложений -->
+      <div class="app-switcher">
+        <button class="active" data-app="main">🏠 Главная</button>
+        <button data-app="holidays">🎉 Праздники</button>
       </div>
 
-      <section class="view active" id="tasks">
-        <div class="section-head"><h2>Дела на сегодня</h2></div>
-
-        <div class="chip-track">
-          <select id="taskWho" class="chip-native" data-field="taskWho" data-with-all="1" data-chip="avatar"></select>
-          <div class="chip-track" data-for="taskWho" style="padding:2px 2px 0"></div>
-          <label class="toggle-chip">
-            <input id="taskToday" type="checkbox">
-            <span class="toggle-face">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-              Сегодня
-            </span>
-          </label>
+      <!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+      <div class="app-container active" id="appMain">
+        <div class="balance-card" id="balanceCard">
+          <div class="balance-item">
+            <span class="balance-label">Доходы</span>
+            <span class="balance-value" id="balIncome">0 ₸</span>
+          </div>
+          <div class="balance-item">
+            <span class="balance-label">Расходы</span>
+            <span class="balance-value" id="balExpense">0 ₸</span>
+          </div>
+          <div class="balance-item balance-item-main" id="balanceMainItem">
+            <span class="balance-label">Доступно</span>
+            <span class="balance-value" id="balAvailable">0 ₸</span>
+          </div>
+          <div class="balance-item">
+            <span class="balance-label">Копилка</span>
+            <span class="balance-value" id="balSavings">0 ₸</span>
+          </div>
         </div>
 
-        <button class="add-toggle" id="toggleTaskForm" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-          Новое дело
-        </button>
+        <section class="view active" id="tasks">
+          <div class="section-head"><h2>Дела на сегодня</h2></div>
 
-        <div class="collapsible" id="taskFormWrap">
-          <form class="card" id="taskForm">
-            <div class="grid">
-              <label class="wide">
-                Дело
-                <input name="task" placeholder="Что нужно сделать" required>
+          <div class="chip-track">
+            <select id="taskWho" class="chip-native" data-field="taskWho" data-with-all="1" data-chip="avatar"></select>
+            <div class="chip-track" data-for="taskWho" style="padding:2px 2px 0"></div>
+            <label class="toggle-chip">
+              <input id="taskToday" type="checkbox">
+              <span class="toggle-face">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+                Сегодня
+              </span>
+            </label>
+          </div>
+
+          <button class="add-toggle" id="toggleTaskForm" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Новое дело
+          </button>
+
+          <div class="collapsible" id="taskFormWrap">
+            <form class="card" id="taskForm">
+              <div class="grid">
+                <label class="wide">
+                  Дело
+                  <input name="task" placeholder="Что нужно сделать" required>
+                </label>
+                <label class="wide">
+                  Ответственный
+                  <select id="taskFormResponsible" name="responsible" class="chip-native" data-field="taskWho" data-chip="avatar"></select>
+                  <div class="chip-track" data-for="taskFormResponsible"></div>
+                </label>
+                <label>
+                  Срок
+                  <input name="deadline" type="date">
+                </label>
+                <label class="wide">
+                  Комментарий
+                  <textarea name="comment" placeholder="Необязательно"></textarea>
+                </label>
+              </div>
+              <div class="actions">
+                <button class="primary" type="submit">Создать дело</button>
+              </div>
+            </form>
+          </div>
+
+          <div id="taskList"></div>
+        </section>
+
+        <section class="view" id="expense">
+          <div class="section-head"><h2>Новый расход</h2></div>
+          <form id="expenseForm">
+            <div class="amount-card">
+              <div class="amount-card-label">
+                <span>Сумма расхода</span>
+                <input name="date" type="date">
+              </div>
+              <div class="amount-row">
+                <input name="amount" inputmode="decimal" placeholder="0">
+                <span class="amount-currency">₸</span>
+              </div>
+            </div>
+            <div class="card">
+              <label class="wide" style="margin-bottom:10px">
+                Кто
+                <select id="expenseWho" name="who" class="chip-native" data-field="expenseWho" data-chip="avatar"></select>
+                <div class="chip-track" data-for="expenseWho"></div>
               </label>
-              <label class="wide">
-                Ответственный
-                <select id="taskFormResponsible" name="responsible" class="chip-native" data-field="taskWho" data-chip="avatar"></select>
-                <div class="chip-track" data-for="taskFormResponsible"></div>
+              <label class="wide" style="margin-bottom:10px">
+                Категория
+                <select id="expenseCategory" name="category" class="chip-native" data-field="expenseCategory" data-chip="plain"></select>
+                <div class="chip-track" data-for="expenseCategory"></div>
               </label>
-              <label>
-                Срок
-                <input name="deadline" type="date">
+              <label class="wide" style="margin-bottom:10px">
+                Способ оплаты
+                <select id="expenseMethod" name="method" class="chip-native" data-field="expenseMethod" data-chip="plain"></select>
+                <div class="chip-track" data-for="expenseMethod"></div>
               </label>
               <label class="wide">
                 Комментарий
                 <textarea name="comment" placeholder="Необязательно"></textarea>
               </label>
+              <div class="actions">
+                <button class="primary" type="submit">Записать расход</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="history-head">
+            <h3>История расходов</h3>
+            <span class="history-total" id="expenseHistoryTotal"></span>
+          </div>
+          <div id="expenseHistory" class="history-list"></div>
+        </section>
+
+        <section class="view" id="income">
+          <div class="section-head"><h2>Новый доход</h2></div>
+          <form id="incomeForm">
+            <div class="amount-card">
+              <div class="amount-card-label">
+                <span>Сумма дохода</span>
+                <input name="date" type="date">
+              </div>
+              <div class="amount-row">
+                <input name="amount" inputmode="decimal" placeholder="0">
+                <span class="amount-currency">₸</span>
+              </div>
+            </div>
+            <div class="card">
+              <label class="wide" style="margin-bottom:10px">
+                Кто
+                <select id="incomeWho" name="who" class="chip-native" data-field="incomeWho" data-chip="avatar"></select>
+                <div class="chip-track" data-for="incomeWho"></div>
+              </label>
+              <label class="wide" style="margin-bottom:10px">
+                Категория
+                <select id="incomeCategory" name="category" class="chip-native" data-field="incomeCategory" data-chip="plain"></select>
+                <div class="chip-track" data-for="incomeCategory"></div>
+              </label>
+              <label class="wide" style="margin-bottom:10px">
+                Способ
+                <select id="incomeMethod" name="method" class="chip-native" data-field="incomeMethod" data-chip="plain"></select>
+                <div class="chip-track" data-for="incomeMethod"></div>
+              </label>
+              <label class="wide">
+                Комментарий
+                <textarea name="comment" placeholder="Необязательно"></textarea>
+              </label>
+              <div class="actions">
+                <button class="primary" type="submit">Записать доход</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="history-head">
+            <h3>История доходов</h3>
+            <span class="history-total" id="incomeHistoryTotal"></span>
+          </div>
+          <div id="incomeHistory" class="history-list"></div>
+        </section>
+
+        <section class="view" id="saving">
+          <div class="section-head"><h2>Пополнить копилку</h2></div>
+          <form id="savingForm">
+            <div class="amount-card">
+              <div class="amount-card-label">
+                <span>Сумма взноса</span>
+                <input name="date" type="date">
+              </div>
+              <div class="amount-row">
+                <input name="amount" inputmode="decimal" placeholder="0">
+                <span class="amount-currency">₸</span>
+              </div>
+            </div>
+            <div class="card">
+              <label class="wide" style="margin-bottom:10px">
+                Кто
+                <select id="savingWho" name="who" class="chip-native" data-field="savingWho" data-chip="avatar"></select>
+                <div class="chip-track" data-for="savingWho"></div>
+              </label>
+              <label class="wide">
+                На что
+                <input name="purpose" placeholder="Цель">
+              </label>
+              <div class="actions">
+                <button class="primary" type="submit">Положить в копилку</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="history-head">
+            <h3>Все взносы</h3>
+            <span class="history-total" id="savingHistoryTotal"></span>
+          </div>
+          <div id="savingHistory" class="history-list"></div>
+        </section>
+
+        <section class="view" id="archive">
+          <div class="section-head"><h2>Архив</h2></div>
+
+          <div class="archive-grid">
+            <button class="archive-tile" type="button" data-archive-panel="archiveTasksPanel">
+              <strong>Дела</strong>
+              <span id="archiveTasksCount">0 завершено</span>
+            </button>
+            <button class="archive-tile" type="button" data-archive-panel="archiveMoneyPanel">
+              <strong>Денежные средства</strong>
+              <span>Месяц и год</span>
+            </button>
+          </div>
+
+          <div class="archive-panel active" id="archiveTasksPanel">
+            <div class="history-head">
+              <h3>Завершённые дела</h3>
+            </div>
+            <div id="archiveTaskList" class="history-list"></div>
+          </div>
+
+          <div class="archive-panel" id="archiveMoneyPanel">
+            <div class="filter-row">
+              <label>
+                Месяц
+                <input id="archiveMonth" type="month">
+              </label>
+              <label>
+                Год
+                <input id="archiveYear" type="number" min="2000" max="2100" step="1">
+              </label>
+            </div>
+            <div class="history-head"><h3>За выбранный месяц</h3></div>
+            <div class="summary-grid" id="archiveMonthSummary"></div>
+            <div class="history-head"><h3>За выбранный год</h3></div>
+            <div class="summary-grid" id="archiveYearSummary"></div>
+            <div class="history-head"><h3>Операции месяца</h3></div>
+            <div id="archiveMoneyList" class="history-list"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ПРИЛОЖЕНИЕ "ПРАЗДНИКИ" -->
+      <div class="app-container" id="appHolidays">
+        <div class="section-head">
+          <h2>🎉 Праздники</h2>
+        </div>
+
+        <button class="add-toggle" id="toggleHolidayForm" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Добавить праздник
+        </button>
+
+        <div class="collapsible" id="holidayFormWrap">
+          <form class="card" id="holidayForm">
+            <div class="grid">
+              <label class="wide">
+                Название праздника
+                <input name="holiday_name" placeholder="Например: День рождения" required>
+              </label>
+              <label class="wide">
+                Кто отмечает
+                <input name="person" placeholder="Имя человека" required>
+              </label>
+              <label>
+                Дата
+                <input name="holiday_date" type="date" required>
+              </label>
+              <label class="wide">
+                Иконка (эмодзи)
+                <input name="icon" placeholder="🎂" maxlength="2" value="🎂">
+              </label>
             </div>
             <div class="actions">
-              <button class="primary" type="submit">Создать дело</button>
+              <button class="primary" type="submit">Добавить праздник</button>
             </div>
           </form>
         </div>
 
-        <div id="taskList"></div>
-      </section>
-
-      <section class="view" id="expense">
-        <div class="section-head"><h2>Новый расход</h2></div>
-        <form id="expenseForm">
-          <div class="amount-card">
-            <div class="amount-card-label">
-              <span>Сумма расхода</span>
-              <input name="date" type="date">
-            </div>
-            <div class="amount-row">
-              <input name="amount" inputmode="decimal" placeholder="0">
-              <span class="amount-currency">₸</span>
-            </div>
-          </div>
-          <div class="card">
-            <label class="wide" style="margin-bottom:10px">
-              Кто
-              <select id="expenseWho" name="who" class="chip-native" data-field="expenseWho" data-chip="avatar"></select>
-              <div class="chip-track" data-for="expenseWho"></div>
-            </label>
-            <label class="wide" style="margin-bottom:10px">
-              Категория
-              <select id="expenseCategory" name="category" class="chip-native" data-field="expenseCategory" data-chip="plain"></select>
-              <div class="chip-track" data-for="expenseCategory"></div>
-            </label>
-            <label class="wide" style="margin-bottom:10px">
-              Способ оплаты
-              <select id="expenseMethod" name="method" class="chip-native" data-field="expenseMethod" data-chip="plain"></select>
-              <div class="chip-track" data-for="expenseMethod"></div>
-            </label>
-            <label class="wide">
-              Комментарий
-              <textarea name="comment" placeholder="Необязательно"></textarea>
-            </label>
-            <div class="actions">
-              <button class="primary" type="submit">Записать расход</button>
-            </div>
-          </div>
-        </form>
-
-        <div class="history-head">
-          <h3>История расходов</h3>
-          <span class="history-total" id="expenseHistoryTotal"></span>
-        </div>
-        <div id="expenseHistory" class="history-list"></div>
-      </section>
-
-      <section class="view" id="income">
-        <div class="section-head"><h2>Новый доход</h2></div>
-        <form id="incomeForm">
-          <div class="amount-card">
-            <div class="amount-card-label">
-              <span>Сумма дохода</span>
-              <input name="date" type="date">
-            </div>
-            <div class="amount-row">
-              <input name="amount" inputmode="decimal" placeholder="0">
-              <span class="amount-currency">₸</span>
-            </div>
-          </div>
-          <div class="card">
-            <label class="wide" style="margin-bottom:10px">
-              Кто
-              <select id="incomeWho" name="who" class="chip-native" data-field="incomeWho" data-chip="avatar"></select>
-              <div class="chip-track" data-for="incomeWho"></div>
-            </label>
-            <label class="wide" style="margin-bottom:10px">
-              Категория
-              <select id="incomeCategory" name="category" class="chip-native" data-field="incomeCategory" data-chip="plain"></select>
-              <div class="chip-track" data-for="incomeCategory"></div>
-            </label>
-            <label class="wide" style="margin-bottom:10px">
-              Способ
-              <select id="incomeMethod" name="method" class="chip-native" data-field="incomeMethod" data-chip="plain"></select>
-              <div class="chip-track" data-for="incomeMethod"></div>
-            </label>
-            <label class="wide">
-              Комментарий
-              <textarea name="comment" placeholder="Необязательно"></textarea>
-            </label>
-            <div class="actions">
-              <button class="primary" type="submit">Записать доход</button>
-            </div>
-          </div>
-        </form>
-
-        <div class="history-head">
-          <h3>История доходов</h3>
-          <span class="history-total" id="incomeHistoryTotal"></span>
-        </div>
-        <div id="incomeHistory" class="history-list"></div>
-      </section>
-
-      <section class="view" id="saving">
-        <div class="section-head"><h2>Пополнить копилку</h2></div>
-        <form id="savingForm">
-          <div class="amount-card">
-            <div class="amount-card-label">
-              <span>Сумма взноса</span>
-              <input name="date" type="date">
-            </div>
-            <div class="amount-row">
-              <input name="amount" inputmode="decimal" placeholder="0">
-              <span class="amount-currency">₸</span>
-            </div>
-          </div>
-          <div class="card">
-            <label class="wide" style="margin-bottom:10px">
-              Кто
-              <select id="savingWho" name="who" class="chip-native" data-field="savingWho" data-chip="avatar"></select>
-              <div class="chip-track" data-for="savingWho"></div>
-            </label>
-            <label class="wide">
-              На что
-              <input name="purpose" placeholder="Цель">
-            </label>
-            <div class="actions">
-              <button class="primary" type="submit">Положить в копилку</button>
-            </div>
-          </div>
-        </form>
-
-        <div class="history-head">
-          <h3>Все взносы</h3>
-          <span class="history-total" id="savingHistoryTotal"></span>
-        </div>
-        <div id="savingHistory" class="history-list"></div>
-      </section>
-
-      <section class="view" id="archive">
-        <div class="section-head"><h2>Архив</h2></div>
-
-        <div class="archive-grid">
-          <button class="archive-tile" type="button" data-archive-panel="archiveTasksPanel">
-            <strong>Дела</strong>
-            <span id="archiveTasksCount">0 завершено</span>
-          </button>
-          <button class="archive-tile" type="button" data-archive-panel="archiveMoneyPanel">
-            <strong>Денежные средства</strong>
-            <span>Месяц и год</span>
-          </button>
-        </div>
-
-        <div class="archive-panel active" id="archiveTasksPanel">
-          <div class="history-head">
-            <h3>Завершённые дела</h3>
-          </div>
-          <div id="archiveTaskList" class="history-list"></div>
-        </div>
-
-        <div class="archive-panel" id="archiveMoneyPanel">
-          <div class="filter-row">
-            <label>
-              Месяц
-              <input id="archiveMonth" type="month">
-            </label>
-            <label>
-              Год
-              <input id="archiveYear" type="number" min="2000" max="2100" step="1">
-            </label>
-          </div>
-          <div class="history-head"><h3>За выбранный месяц</h3></div>
-          <div class="summary-grid" id="archiveMonthSummary"></div>
-          <div class="history-head"><h3>За выбранный год</h3></div>
-          <div class="summary-grid" id="archiveYearSummary"></div>
-          <div class="history-head"><h3>Операции месяца</h3></div>
-          <div id="archiveMoneyList" class="history-list"></div>
-        </div>
-      </section>
+        <div id="holidayList"></div>
+      </div>
 
       <div class="status" id="status"></div>
     </main>
 
+    <!-- Нижняя навигация для главного приложения -->
     <nav class="tabbar" aria-label="Разделы">
       <button class="tab active" data-tab="tasks" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -1116,11 +1261,19 @@
 
       const tg = window.Telegram && window.Telegram.WebApp;
       const initData = tg ? tg.initData : '';
-      const state = { today: '', tasks: [], archiveTasks: [], options: {}, finance: {} };
+      const state = { 
+        today: '', 
+        tasks: [], 
+        archiveTasks: [], 
+        options: {}, 
+        finance: {},
+        holidays: [] 
+      };
 
       const AVATAR_PALETTE = ['#ff6f91', '#7c6ff0', '#10b981', '#f6a94a', '#2fb4c9', '#e0674a', '#8a5fb0'];
       const MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
       const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+      const HOLIDAY_ICONS = ['🎂', '🎉', '🎊', '🥳', '🎁', '💐', '🌟', '✨', '🎈', '🎀'];
 
       const TASK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
       const CALENDAR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>';
@@ -1132,6 +1285,24 @@
 
       if (tg) { tg.ready(); tg.expand(); }
 
+      // --- ПЕРЕКЛЮЧАТЕЛЬ ПРИЛОЖЕНИЙ ---
+      document.querySelectorAll('.app-switcher button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.app-switcher button').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const appName = btn.dataset.app;
+          document.querySelectorAll('.app-container').forEach((container) => {
+            container.classList.toggle('active', container.id === 'app' + appName.charAt(0).toUpperCase() + appName.slice(1));
+          });
+
+          if (appName === 'holidays') {
+            loadHolidays();
+          }
+        });
+      });
+
+      // --- НАВИГАЦИЯ ---
       document.querySelectorAll('.tab').forEach((tab) => {
         tab.addEventListener('click', () => activateTab(tab.dataset.tab));
       });
@@ -1166,11 +1337,18 @@
         document.getElementById('toggleTaskForm').classList.toggle('open');
       });
 
+      document.getElementById('toggleHolidayForm').addEventListener('click', () => {
+        document.getElementById('holidayFormWrap').classList.toggle('open');
+        document.getElementById('toggleHolidayForm').classList.toggle('open');
+      });
+
       bindForm('expenseForm', 'addExpense');
       bindForm('incomeForm', 'addIncome');
       bindForm('savingForm', 'addSaving');
       bindTaskForm();
+      bindHolidayForm();
 
+      // --- ЗАГРУЗКА ДАННЫХ ---
       callServer('getAppState', {})
         .then((result) => {
           state.today = result.today;
@@ -1178,6 +1356,7 @@
           state.archiveTasks = result.completedTasks || [];
           state.options = result.options || {};
           state.finance = result.finance || {};
+          state.holidays = result.holidays || [];
           fillDates(result.today);
           fillArchiveFilters(result.today);
           showDate(result.today);
@@ -1185,19 +1364,21 @@
           renderTasks(state.tasks);
           renderFinance();
           renderArchive();
+          renderHolidays(state.holidays);
         })
         .catch(showError);
 
-function activateTab(name) {
-  document.querySelectorAll('.tab').forEach((tab) => {
-    tab.classList.toggle('active', tab.dataset.tab === name);
-  });
-  document.querySelectorAll('.view').forEach((view) => {
-    view.classList.toggle('active', view.id === name);
-  });
-  document.body.dataset.context = name;
-}
+      function activateTab(name) {
+        document.querySelectorAll('.tab').forEach((tab) => {
+          tab.classList.toggle('active', tab.dataset.tab === name);
+        });
+        document.querySelectorAll('.view').forEach((view) => {
+          view.classList.toggle('active', view.id === name);
+        });
+        document.body.dataset.context = name;
+      }
 
+      // --- ПОПУЛЯЦИЯ SELECT ---
       function populateAllSelects() {
         document.querySelectorAll('select[data-field]').forEach((select) => {
           const fieldName = select.dataset.field;
@@ -1285,6 +1466,7 @@ function activateTab(name) {
         });
       }
 
+      // --- ФОРМЫ ---
       function bindForm(formId, serverFunction) {
         const form = document.getElementById(formId);
         form.addEventListener('submit', (event) => {
@@ -1334,6 +1516,30 @@ function activateTab(name) {
         });
       }
 
+      function bindHolidayForm() {
+        const form = document.getElementById('holidayForm');
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          setStatus('Сохраняю праздник...');
+
+          callServer('addHoliday', formToObject(form))
+            .then((result) => {
+              setStatus(result.message || 'Праздник добавлен!');
+              form.reset();
+              document.getElementById('holidayFormWrap').classList.remove('open');
+              document.getElementById('toggleHolidayForm').classList.remove('open');
+
+              if (result.holidays) {
+                state.holidays = result.holidays;
+                renderHolidays(state.holidays);
+              }
+              if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
+            })
+            .catch(showError);
+        });
+      }
+
+      // --- ЗАГРУЗКА ДАННЫХ ---
       function loadTasks(options) {
         options = options || {};
         if (!options.silent) { setStatus('Обновляю дела...'); }
@@ -1352,7 +1558,6 @@ function activateTab(name) {
 
       function loadFinance(options) {
         options = options || {};
-
         callServer('getFinance', {})
           .then((result) => {
             state.finance = result.finance || {};
@@ -1375,6 +1580,17 @@ function activateTab(name) {
           .catch((error) => { if (!options.silent) { showError(error); } });
       }
 
+      function loadHolidays(options) {
+        options = options || {};
+        callServer('getHolidays', {})
+          .then((result) => {
+            state.holidays = result.holidays || [];
+            renderHolidays(state.holidays);
+          })
+          .catch((error) => { if (!options.silent) { showError(error); } });
+      }
+
+      // --- ЗАДАЧИ ---
       function complete(rowNumber) {
         setStatus('Переношу задачу в архив...');
         callServer('completeTask', { rowNumber })
@@ -1423,6 +1639,7 @@ function activateTab(name) {
           .catch(showError);
       }
 
+      // --- РЕНДЕРИНГ ЗАДАЧ ---
       function renderTasks(tasks) {
         const list = document.getElementById('taskList');
 
@@ -1533,6 +1750,7 @@ function activateTab(name) {
         });
       }
 
+      // --- ФИНАНСЫ ---
       function renderFinance() {
         const finance = state.finance || {};
         const totals = finance.totals || {};
@@ -1708,6 +1926,7 @@ function activateTab(name) {
           .catch(showError);
       }
 
+      // --- АРХИВ ---
       function renderArchive() {
         renderArchiveTasks();
         renderArchiveMoney();
@@ -1799,6 +2018,94 @@ function activateTab(name) {
           .reduce((acc, entry) => acc + (Number(entry.amount) || 0), 0);
       }
 
+      // --- ПРАЗДНИКИ ---
+      function renderHolidays(holidays) {
+        const list = document.getElementById('holidayList');
+        if (!list) return;
+
+        if (!holidays || !holidays.length) {
+          list.innerHTML = '<div class="holiday-empty">🎄 Нет добавленных праздников.</div>';
+          return;
+        }
+
+        list.innerHTML = '';
+        // Сортируем по дате
+        const sorted = [...holidays].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
+        sorted.forEach((holiday) => {
+          const item = document.createElement('div');
+          item.className = 'holiday-item';
+
+          const icon = document.createElement('div');
+          icon.className = 'holiday-icon';
+          icon.textContent = holiday.icon || '🎂';
+          icon.style.background = colorForName(holiday.person || holiday.name);
+          item.appendChild(icon);
+
+          const body = document.createElement('div');
+          body.className = 'holiday-body';
+
+          const name = document.createElement('div');
+          name.className = 'holiday-name';
+          name.textContent = holiday.name || 'Праздник';
+          body.appendChild(name);
+
+          const meta = document.createElement('div');
+          meta.className = 'holiday-meta';
+          const dateStr = formatDateOnly(holiday.date);
+          const daysUntil = getDaysUntil(holiday.date);
+          let daysText = '';
+          if (daysUntil === 0) {
+            daysText = '🎉 СЕГОДНЯ!';
+          } else if (daysUntil === 1) {
+            daysText = '⏰ Завтра!';
+          } else if (daysUntil > 1 && daysUntil <= 7) {
+            daysText = `📅 Через ${daysUntil} дней`;
+          }
+          meta.textContent = [dateStr, holiday.person, daysText].filter(Boolean).join(' · ');
+          body.appendChild(meta);
+
+          item.appendChild(body);
+
+          const actions = document.createElement('div');
+          actions.className = 'holiday-actions';
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.type = 'button';
+          deleteBtn.className = 'icon-action delete';
+          deleteBtn.innerHTML = DELETE_ICON;
+          deleteBtn.addEventListener('click', () => deleteHoliday(holiday.id));
+          actions.appendChild(deleteBtn);
+
+          item.appendChild(actions);
+          list.appendChild(item);
+        });
+      }
+
+      function getDaysUntil(dateStr) {
+        if (!dateStr) return -1;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const target = new Date(dateStr);
+        target.setHours(0, 0, 0, 0);
+        const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+        return diff;
+      }
+
+      function deleteHoliday(id) {
+        if (!id || !confirm('Удалить этот праздник?')) return;
+        setStatus('Удаляю праздник...');
+        callServer('deleteHoliday', { id })
+          .then((result) => {
+            state.holidays = result.holidays || [];
+            renderHolidays(state.holidays);
+            setStatus(result.message || 'Готово.');
+            if (tg && tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); }
+          })
+          .catch(showError);
+      }
+
+      // --- ХЕЛПЕРЫ ---
       function fillArchiveFilters(today) {
         const date = today || new Date().toISOString().slice(0, 10);
         const monthInput = document.getElementById('archiveMonth');
