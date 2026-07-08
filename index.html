@@ -1186,21 +1186,15 @@
         })
         .catch(showError);
 
-      function activateTab(name) {
-        document.querySelectorAll('.tab').forEach((tab) => {
-          tab.classList.toggle('active', tab.dataset.tab === name);
-        });
-        document.querySelectorAll('.view').forEach((view) => {
-          view.classList.toggle('active', view.id === name);
-        });
-        document.body.dataset.context = name;
-
-        if (name === 'expense' || name === 'income' || name === 'saving') {
-          loadFinance();
-        } else if (name === 'archive') {
-          loadArchive();
-        }
-      }
+function activateTab(name) {
+  document.querySelectorAll('.tab').forEach((tab) => {
+    tab.classList.toggle('active', tab.dataset.tab === name);
+  });
+  document.querySelectorAll('.view').forEach((view) => {
+    view.classList.toggle('active', view.id === name);
+  });
+  document.body.dataset.context = name;
+}
 
       function populateAllSelects() {
         document.querySelectorAll('select[data-field]').forEach((select) => {
