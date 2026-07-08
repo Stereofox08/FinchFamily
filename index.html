@@ -19,15 +19,9 @@
         --shadow: 0 14px 30px -16px rgba(60, 40, 100, 0.28);
         --shadow-lg: 0 20px 40px -18px rgba(60, 40, 100, 0.32);
 
-        /* section accent, overridden per data-context */
         --accent-a: #ff9a76;
         --accent-b: #ff6f91;
         --accent-tint: rgba(255, 111, 145, 0.13);
-
-        /* height reserved for Telegram's native WebApp chrome (close button,
-           the "more"/settings button, drag handle) so our own header never
-           sits underneath it. Telegram doesn't expose this as a CSS var, so
-           we approximate with a fixed value plus the real safe-area inset. */
         --tg-header-height: 65px;
       }
 
@@ -59,13 +53,9 @@
         max-width: 480px;
         margin: 0 auto;
         padding: 20px 16px 8px;
-        /* push all content below Telegram's own header row so it never
-           overlaps with the native close/more buttons at the top */
         padding-top: calc(var(--tg-header-height) + env(safe-area-inset-top, 0px) + 14px);
         padding-bottom: calc(110px + env(safe-area-inset-bottom));
       }
-
-      /* ---------- Header ---------- */
 
       .header-row {
         display: flex;
@@ -105,14 +95,6 @@
 
       .icon-btn:active { transform: scale(0.92); }
       .icon-btn svg { width: 19px; height: 19px; stroke: currentColor; }
-
-      .debug {
-        color: var(--ink-faint);
-        font-size: 10.5px;
-        margin: -12px 0 14px;
-      }
-
-      /* ---------- Balance panel (always visible) ---------- */
 
       .balance-card {
         display: grid;
@@ -171,8 +153,6 @@
         .balance-item:nth-child(3) { border-left: none; }
       }
 
-      /* ---------- Section headline ---------- */
-
       .section-head {
         display: flex;
         align-items: center;
@@ -186,8 +166,6 @@
         letter-spacing: -0.01em;
       }
 
-      /* ---------- Views ---------- */
-
       .view { display: none; }
       .view.active { display: block; animation: rise 0.26s ease; }
 
@@ -195,8 +173,6 @@
         from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
       }
-
-      /* ---------- Chip filter / selector rows ---------- */
 
       .chip-track {
         display: flex;
@@ -253,8 +229,6 @@
 
       select.chip-native { display: none; }
 
-      /* ---------- Toggle chip (checkbox styled as pill) ---------- */
-
       .toggle-chip { position: relative; display: inline-flex; flex-shrink: 0; }
       .toggle-chip input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
 
@@ -281,8 +255,6 @@
         background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
         box-shadow: 0 8px 16px -8px var(--accent-b);
       }
-
-      /* ---------- Collapsible "new task" composer ---------- */
 
       .add-toggle {
         width: 100%;
@@ -313,8 +285,6 @@
       }
 
       .collapsible.open { max-height: 900px; }
-
-      /* ---------- Cards / panels ---------- */
 
       .card {
         background: var(--surface);
@@ -387,13 +357,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        text-align: center;
-        justify-content: center;
       }
 
       .secondary:active { transform: scale(0.96); }
-
-      /* ---------- Amount hero card (expense / income / saving) ---------- */
 
       .amount-card {
         border-radius: 26px;
@@ -473,8 +439,6 @@
         flex-shrink: 0;
       }
 
-      /* ---------- Task list ---------- */
-
       #taskList { display: grid; gap: 10px; }
 
       .task {
@@ -516,6 +480,7 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        cursor: pointer;
       }
 
       .icon-action svg { width: 15px; height: 15px; stroke: currentColor; }
@@ -594,8 +559,6 @@
       }
 
       .empty svg { width: 32px; height: 32px; stroke: var(--ink-faint); }
-
-      /* ---------- Operation history (expense / income / saving) ---------- */
 
       .history-head {
         display: flex;
@@ -716,6 +679,7 @@
         display: grid;
         align-content: space-between;
         color: var(--ink);
+        cursor: pointer;
       }
 
       .archive-tile strong {
@@ -816,8 +780,6 @@
       .icon-action.edit { background: var(--surface-soft); color: var(--ink-soft); }
       .icon-action.delete { background: rgba(214, 69, 80, 0.12); color: #d64550; }
 
-      /* ---------- Bottom nav ---------- */
-
       .tabbar {
         position: fixed;
         left: 50%;
@@ -849,6 +811,7 @@
         color: var(--ink-faint);
         font-size: 10.5px;
         font-weight: 700;
+        cursor: pointer;
       }
 
       .tab svg { width: 19px; height: 19px; stroke: currentColor; transition: transform 0.18s ease; }
@@ -876,9 +839,6 @@
           <h1 class="title">Наш дом</h1>
         </div>
         <div style="display:flex; gap:8px;">
-          <button class="icon-btn" id="addHomeBtn" type="button" aria-label="Добавить на главный экран" style="display:none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
-          </button>
           <button class="icon-btn" id="refreshTasks" type="button" aria-label="Обновить">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
           </button>
@@ -1150,16 +1110,12 @@
     </nav>
 
     <script>
-      // URL of the Apps Script Web App deployment (.../exec). Declared here,
-      // at the very top, because callServer() (which uses it) is invoked
-      // by top-level code further down — and `const` is not hoisted the
-      // way function declarations are, so it must exist before that point.
       const APPS_SCRIPT_URL = 'https://hgheavnzotfftjapkhik.supabase.co/functions/v1/bright-endpoint';
 
       const tg = window.Telegram && window.Telegram.WebApp;
       const initData = tg ? tg.initData : '';
       const state = { today: '', tasks: [], archiveTasks: [], options: {}, finance: {} };
-      let isEditing = false;
+
       const AVATAR_PALETTE = ['#ff6f91', '#7c6ff0', '#10b981', '#f6a94a', '#2fb4c9', '#e0674a', '#8a5fb0'];
       const MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
       const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
@@ -1173,13 +1129,6 @@
       const DELETE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
 
       if (tg) { tg.ready(); tg.expand(); }
-
-      initAddToHomeScreen();
-
-function initAddToHomeScreen() {
-  const btn = document.getElementById('addHomeBtn');
-  btn.style.display = 'none';
-}
 
       document.querySelectorAll('.tab').forEach((tab) => {
         tab.addEventListener('click', () => activateTab(tab.dataset.tab));
@@ -1195,8 +1144,10 @@ function initAddToHomeScreen() {
           loadFinance();
         }
       });
+
       document.getElementById('taskWho').addEventListener('change', loadTasks);
       document.getElementById('taskToday').addEventListener('change', loadTasks);
+
       document.querySelectorAll('[data-archive-panel]').forEach((button) => {
         button.addEventListener('click', () => {
           document.querySelectorAll('.archive-panel').forEach((panel) => {
@@ -1204,6 +1155,7 @@ function initAddToHomeScreen() {
           });
         });
       });
+
       document.getElementById('archiveMonth').addEventListener('change', renderArchiveMoney);
       document.getElementById('archiveYear').addEventListener('change', renderArchiveMoney);
 
@@ -1426,22 +1378,6 @@ function initAddToHomeScreen() {
           })
           .catch((error) => { if (!options.silent) { showError(error); } });
       }
-
-      const LIVE_REFRESH_INTERVAL_MS = 15000;
-
-      function silentRefreshAll() {
-        loadTasks({ silent: true });
-        loadFinance({ silent: true });
-        if (document.body.dataset.context === 'archive') { loadArchive({ silent: true }); }
-      }
-
-      setInterval(silentRefreshAll, LIVE_REFRESH_INTERVAL_MS);
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') { silentRefreshAll(); }
-      });
-
-      window.addEventListener('focus', silentRefreshAll);
 
       function complete(rowNumber) {
         setStatus('Переношу задачу в архив...');
