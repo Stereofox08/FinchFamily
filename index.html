@@ -105,7 +105,6 @@
         align-items: center;
       }
 
-      /* Переключатель приложений */
       .app-switcher {
         display: flex;
         gap: 4px;
@@ -193,7 +192,6 @@
         .balance-item:nth-child(3) { border-left: none; }
       }
 
-      /* ---------- Приложения ---------- */
       .app-container { display: none; }
       .app-container.active { display: block; animation: rise 0.26s ease; }
 
@@ -214,6 +212,9 @@
         font-weight: 800;
         letter-spacing: -0.01em;
       }
+
+      .view { display: none; }
+      .view.active { display: block; animation: rise 0.26s ease; }
 
       .chip-track {
         display: flex;
@@ -823,7 +824,6 @@
       .icon-action.edit { background: var(--surface-soft); color: var(--ink-soft); }
       .icon-action.delete { background: rgba(214, 69, 80, 0.12); color: #d64550; }
 
-      /* ---------- Праздники ---------- */
       .holiday-item {
         background: var(--surface);
         border-radius: 16px;
@@ -877,7 +877,6 @@
         font-weight: 600;
       }
 
-      /* ---------- Нижняя навигация ---------- */
       .tabbar {
         position: fixed;
         left: 50%;
@@ -944,7 +943,6 @@
         </div>
       </div>
 
-      <!-- Переключатель приложений -->
       <div class="app-switcher">
         <button class="active" data-app="main">🏠 Главная</button>
         <button data-app="holidays">🎉 Праздники</button>
@@ -1234,7 +1232,6 @@
       <div class="status" id="status"></div>
     </main>
 
-    <!-- Нижняя навигация для главного приложения -->
     <nav class="tabbar" aria-label="Разделы">
       <button class="tab active" data-tab="tasks" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -1303,7 +1300,28 @@
         });
       });
 
-      // --- НАВИГАЦИЯ ---
+      // --- НАВИГАЦИЯ ПО ВКЛАДКАМ ---
+      function activateTab(name) {
+        // Скрываем все вкладки
+        document.querySelectorAll('.view').forEach((view) => {
+          view.classList.remove('active');
+        });
+        
+        // Показываем выбранную
+        const target = document.getElementById(name);
+        if (target) {
+          target.classList.add('active');
+        }
+        
+        // Обновляем кнопки
+        document.querySelectorAll('.tab').forEach((tab) => {
+          tab.classList.toggle('active', tab.dataset.tab === name);
+        });
+        
+        document.body.dataset.context = name;
+      }
+
+      // Навешиваем обработчики на кнопки вкладок
       document.querySelectorAll('.tab').forEach((tab) => {
         tab.addEventListener('click', () => activateTab(tab.dataset.tab));
       });
@@ -1368,16 +1386,6 @@
           renderHolidays(state.holidays);
         })
         .catch(showError);
-
-      function activateTab(name) {
-        document.querySelectorAll('.tab').forEach((tab) => {
-          tab.classList.toggle('active', tab.dataset.tab === name);
-        });
-        document.querySelectorAll('.view').forEach((view) => {
-          view.classList.toggle('active', view.id === name);
-        });
-        document.body.dataset.context = name;
-      }
 
       // --- ПОПУЛЯЦИЯ SELECT ---
       function populateAllSelects() {
