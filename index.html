@@ -1551,21 +1551,24 @@
       }
 
       // --- ЗАГРУЗКА ДАННЫХ ---
-      function loadTasks(options) {
-        options = options || {};
-        if (!options.silent) { setStatus('Обновляю дела...'); }
+function loadTasks(options) {
+  options = options || {};
+  if (!options.silent) { setStatus('Обновляю дела...'); }
 
-        callServer('getTasks', {
-          who: document.getElementById('taskWho').value,
-          onlyToday: document.getElementById('taskToday').checked,
-        })
-          .then((result) => {
-            state.tasks = result.tasks || [];
-            renderTasks(state.tasks);
-            if (!options.silent) { setStatus(''); }
-          })
-          .catch((error) => { if (!options.silent) { showError(error); } });
-      }
+  const who = document.getElementById('taskWho').value;
+  const onlyToday = document.getElementById('taskToday').checked;
+
+  callServer('getTasks', {
+    who: who,
+    onlyToday: onlyToday,
+  })
+    .then((result) => {
+      state.tasks = result.tasks || [];
+      renderTasks(state.tasks);
+      if (!options.silent) { setStatus(''); }
+    })
+    .catch((error) => { if (!options.silent) { showError(error); } });
+}
 
       function loadFinance(options) {
         options = options || {};
